@@ -1,3 +1,17 @@
+use std::{fmt, rc::Rc};
+
+use crate::runtime::{
+    choice_point::ChoicePoint,
+    container::Container,
+    control_command::ControlCommand,
+    divert::Divert,
+    glue::Glue,
+    native_function_call::NativeFunctionCall,
+    tag::Tag,
+    value::Value,
+    variable::{ReadCount, VariableAssignment, VariableReference},
+};
+
 pub mod choice_point;
 pub mod container;
 pub mod control_command;
@@ -7,19 +21,6 @@ pub mod native_function_call;
 pub mod tag;
 pub mod value;
 pub mod variable;
-
-use std::fmt;
-use std::rc::Rc;
-
-use runtime::choice_point::ChoicePoint;
-use runtime::container::Container;
-use runtime::control_command::ControlCommand;
-use runtime::divert::Divert;
-use runtime::glue::Glue;
-use runtime::native_function_call::NativeFunctionCall;
-use runtime::tag::Tag;
-use runtime::value::Value;
-use runtime::variable::{ReadCount, VariableAssignment, VariableReference};
 
 #[derive(Debug)]
 pub enum RuntimeObject {

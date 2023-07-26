@@ -1,6 +1,8 @@
-use std::collections::HashMap;
-use std::fmt;
-use std::hash::{Hash, Hasher};
+use std::{
+    collections::HashMap,
+    fmt,
+    hash::{Hash, Hasher},
+};
 
 pub struct InkListItem {
     origin_name: Option<String>,

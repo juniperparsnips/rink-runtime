@@ -1,7 +1,10 @@
-use path::{Fragment, Path};
-use runtime::container::Container;
-use runtime::RuntimeObject;
 use std::rc::Rc;
+
+use crate::{
+    path::{Fragment, Path},
+    runtime::container::Container,
+    runtime::RuntimeObject,
+};
 
 #[derive(Debug)]
 pub struct RuntimeGraph {

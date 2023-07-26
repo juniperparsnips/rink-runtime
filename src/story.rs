@@ -1,10 +1,12 @@
-use choice::Choice;
-use error::{InkError, InkErrorCode};
-use json_parser::RuntimeGraphBuilder;
-use runtime_graph::RuntimeGraph;
-use story_state::StoryState;
-
 use std::io::Read;
+
+use crate::{
+    choice::Choice,
+    error::{InkError, InkErrorCode},
+    json_parser::RuntimeGraphBuilder,
+    runtime_graph::RuntimeGraph,
+    story_state::StoryState,
+};
 
 pub const INK_VERSION: u32 = 17;
 pub const INK_VERSION_MINIMUM_COMPATIBLE: u32 = 16;

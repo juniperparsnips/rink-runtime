@@ -1,9 +1,9 @@
-use runtime::container::Container;
-
-use runtime::RuntimeObject;
-use runtime_context::RuntimeContext;
-
 use std::rc::Rc;
+
+use crate::{
+    runtime::{container::Container, RuntimeObject},
+    runtime_context::RuntimeContext,
+};
 
 #[derive(Debug, Clone)]
 pub struct Thread {

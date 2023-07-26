@@ -1,25 +1,26 @@
-use std::fmt;
-use std::fmt::Error;
-use std::hash::{Hash, Hasher};
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fmt::{self, Error},
+    hash::{Hash, Hasher},
+};
 
 pub struct InkListItem {
     origin_name: Option<String>,
-    item_name: Option<String>
+    item_name: Option<String>,
 }
 
 impl InkListItem {
     pub fn new(origin_name: String, item_name: String) -> InkListItem {
         InkListItem {
             origin_name: Some(origin_name),
-            item_name: Some(item_name)
+            item_name: Some(item_name),
         }
     }
 
     pub fn new_null() -> InkListItem {
         InkListItem {
             origin_name: None,
-            item_name: None
+            item_name: None,
         }
     }
 
@@ -28,21 +29,21 @@ impl InkListItem {
 
         InkListItem {
             origin_name: parts.get(0).map(|ref part| part.to_string()),
-            item_name: parts.get(1).map(|ref part| part.to_string())
+            item_name: parts.get(1).map(|ref part| part.to_string()),
         }
     }
 
     pub fn origin_name(&self) -> Option<&String> {
         match self.origin_name {
             Some(ref origin_name) => Some(origin_name),
-            _ => None
+            _ => None,
         }
     }
 
     pub fn item_name(&self) -> Option<&String> {
         match self.item_name {
             Some(ref item_name) => Some(item_name),
-            _ => None
+            _ => None,
         }
     }
 
@@ -52,17 +53,11 @@ impl InkListItem {
 
     pub fn full_name(&self) -> Option<String> {
         match self.item_name {
-            Some(ref item_name) => {
-                match self.origin_name {
-                    Some(ref origin_name) => {
-                        Some(format!("{}.{}", origin_name, item_name))
-                    }
-                    _ => {
-                        Some(format!("?.{}", item_name))
-                    }
-                }
-            }
-            _ => None
+            Some(ref item_name) => match self.origin_name {
+                Some(ref origin_name) => Some(format!("{}.{}", origin_name, item_name)),
+                _ => Some(format!("?.{}", item_name)),
+            },
+            _ => None,
         }
     }
 }
@@ -71,16 +66,14 @@ impl fmt::Display for InkListItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.full_name() {
             Some(full_name) => write!(f, "{}", full_name),
-            _ => write!(f, "")
+            _ => write!(f, ""),
         }
-
     }
 }
 
 impl PartialEq for InkListItem {
     fn eq(&self, other: &InkListItem) -> bool {
-        self.origin_name == other.origin_name &&
-            self.item_name == other.item_name
+        self.origin_name == other.origin_name && self.item_name == other.item_name
     }
 }
 
@@ -95,14 +88,14 @@ impl Hash for InkListItem {
 
 pub struct InkList {
     ink_list_items: HashMap<InkListItem, i32>,
-    origin_names: Option<Vec<String>>
+    origin_names: Option<Vec<String>>,
 }
 
 impl InkList {
     pub fn new() -> InkList {
         InkList {
             ink_list_items: HashMap::new(),
-            origin_names: None
+            origin_names: None,
         }
     }
 
@@ -118,7 +111,7 @@ impl InkList {
     pub fn add_origin_name(&mut self, origin_name: String) {
         match self.origin_names {
             Some(ref mut origin_names) => origin_names.push(origin_name),
-            _ => self.origin_names = Some(vec![origin_name])
+            _ => self.origin_names = Some(vec![origin_name]),
         }
     }
 
@@ -127,8 +120,8 @@ impl InkList {
             Some(ref mut origin_names) => {
                 let mut others = input;
                 origin_names.append(&mut others)
-            },
-            _ => self.origin_names = Some(input)
+            }
+            _ => self.origin_names = Some(input),
         }
     }
 
@@ -149,7 +142,7 @@ impl InkList {
 
         match max_item {
             Some(item) => Some((item, max)),
-            _ => None
+            _ => None,
         }
     }
 
@@ -170,7 +163,7 @@ impl InkList {
 
         match min_item {
             Some(item) => Some((item, min)),
-            _ => None
+            _ => None,
         }
     }
 
@@ -189,15 +182,11 @@ impl InkList {
     /// item values in the passed in list. Equivalent to calling (list1 > list2) in ink.
     pub fn greater_than(&self, ink_list: &InkList) -> bool {
         match self.min_item() {
-            Some((_, value)) => {
-                match ink_list.max_item() {
-                    Some((_, other_value)) => {
-                        value > other_value
-                    },
-                    _ => true
-                }
+            Some((_, value)) => match ink_list.max_item() {
+                Some((_, other_value)) => value > other_value,
+                _ => true,
             },
-            _ => false
+            _ => false,
         }
     }
 
@@ -205,15 +194,11 @@ impl InkList {
     /// item values in the passed in list. Equivalent to calling (list1 < list2) in ink.
     pub fn less_than(&self, ink_list: &InkList) -> bool {
         match self.max_item() {
-            Some((_, value)) => {
-                match ink_list.min_item() {
-                    Some((_, other_value)) => {
-                        value < other_value
-                    },
-                    _ => true
-                }
+            Some((_, value)) => match ink_list.min_item() {
+                Some((_, other_value)) => value < other_value,
+                _ => true,
             },
-            _ => false
+            _ => false,
         }
     }
 }
@@ -243,9 +228,7 @@ impl fmt::Display for InkList {
             }
         }
 
-        ordered_list.sort_by(|&(ref value, _), &(ref other_value, _)| {
-            value.cmp(other_value)
-        });
+        ordered_list.sort_by(|&(ref value, _), &(ref other_value, _)| value.cmp(other_value));
 
         let mut iter = ordered_list.iter();
         let mut ink_list_str = String::with_capacity(item_names_len + (ordered_list.len() - 1) * 2);

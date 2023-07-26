@@ -1,26 +1,24 @@
-use std::error::Error;
-use std::fmt;
-use std::io::Read;
-use std::rc::Rc;
+use std::{error::Error, fmt, io::Read, rc::Rc};
 
-use error::InkError;
-use path::Path;
-
-use runtime::choice_point::ChoicePoint;
-use runtime::container::Container;
-use runtime::control_command::ControlCommand;
-use runtime::divert::{Divert, TargetType};
-use runtime::glue::Glue;
-use runtime::tag::Tag;
-use runtime::value::Value;
-use runtime::variable::{ReadCount, VariableAssignment, VariableReference};
-use runtime::RuntimeObject;
-use runtime_graph::RuntimeGraph;
-
-use serde::de::Error as SerdeError;
-use serde::de::{Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
-
+use serde::de::{Deserialize, Deserializer, Error as SerdeError, MapAccess, SeqAccess, Visitor};
 use serde_json;
+
+use crate::{
+    error::InkError,
+    path::Path,
+    runtime::{
+        choice_point::ChoicePoint,
+        container::Container,
+        control_command::ControlCommand,
+        divert::{Divert, TargetType},
+        glue::Glue,
+        tag::Tag,
+        value::Value,
+        variable::{ReadCount, VariableAssignment, VariableReference},
+        RuntimeObject,
+    },
+    runtime_graph::RuntimeGraph,
+};
 
 struct RuntimeGraphVisitor {}
 

@@ -1,5 +1,6 @@
-use path::Path;
 use serde::Deserialize;
+
+use crate::path::Path;
 
 #[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
 pub enum PushPopType {

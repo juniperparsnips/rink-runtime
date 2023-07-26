@@ -1,6 +1,4 @@
-use callstack::CallStack;
-use choice::Choice;
-use runtime_graph::RuntimeGraph;
+use crate::{callstack::CallStack, choice::Choice, runtime_graph::RuntimeGraph};
 
 pub struct StoryState {
     callstack: CallStack,

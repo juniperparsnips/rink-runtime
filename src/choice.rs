@@ -1,6 +1,4 @@
-use callstack::Thread;
-use path::Path;
-use runtime::choice_point::ChoicePoint;
+use crate::{callstack::Thread, path::Path, runtime::choice_point::ChoicePoint};
 
 #[derive(Debug)]
 pub struct Choice {

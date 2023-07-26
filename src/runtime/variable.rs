@@ -1,6 +1,8 @@
-use path::Path;
-use serde::Deserialize;
 use std::fmt;
+
+use serde::Deserialize;
+
+use crate::path::Path;
 
 #[derive(Debug, Deserialize)]
 pub struct VariableAssignment {

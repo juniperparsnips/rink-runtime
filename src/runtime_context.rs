@@ -1,8 +1,6 @@
-use runtime::container::Container;
-use runtime::divert::PushPopType;
-use runtime::RuntimeObject;
-
 use std::rc::Rc;
+
+use crate::runtime::{container::Container, divert::PushPopType, RuntimeObject};
 
 #[derive(Debug, Clone)]
 struct Element {

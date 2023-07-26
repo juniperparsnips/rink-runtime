@@ -1,7 +1,8 @@
-use path::Path;
+use std::fmt;
+
 use serde::Deserialize;
 
-use std::fmt;
+use crate::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub enum Value {

@@ -1,6 +1,8 @@
-use std::error;
-use std::fmt::{self, Debug, Display};
-use std::io;
+use std::{
+    error,
+    fmt::{self, Debug, Display},
+    io,
+};
 
 use serde_json;
 
