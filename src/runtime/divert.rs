@@ -1,18 +1,20 @@
 use path::Path;
+use serde::Deserialize;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
 pub enum PushPopType {
     Tunnel,
     Function,
     None,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Deserialize)]
 pub enum TargetType {
     Name(String),
     Path(Path),
 }
 
+#[derive(Debug, Deserialize)]
 pub struct Divert {
     target: Option<TargetType>,
     stack_push_type: PushPopType,

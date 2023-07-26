@@ -1,8 +1,12 @@
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::slice::Iter;
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    slice::Iter,
+};
 
-#[derive(Clone, PartialEq, Hash, Debug)]
+use serde::Deserialize;
+
+#[derive(Debug, Clone, PartialEq, Hash, Deserialize)]
 pub enum Fragment {
     Index(usize),
     Name(String),
@@ -17,7 +21,7 @@ impl fmt::Display for Fragment {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Path {
     fragments: Vec<Fragment>,
     is_relative: bool,

@@ -5,7 +5,7 @@ use runtime_context::RuntimeContext;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Thread {
     stack: Vec<RuntimeContext>,
 }

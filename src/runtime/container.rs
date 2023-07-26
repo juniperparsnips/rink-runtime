@@ -1,5 +1,7 @@
 use runtime::RuntimeObject;
+use serde::Deserialize;
 
+#[derive(Debug, Deserialize)]
 pub struct Container {
     content: Vec<RuntimeObject>,
     name: Option<String>,

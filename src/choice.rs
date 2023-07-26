@@ -2,6 +2,7 @@ use callstack::Thread;
 use path::Path;
 use runtime::choice_point::ChoicePoint;
 
+#[derive(Debug)]
 pub struct Choice {
     text: Option<String>,
     choice_point: ChoicePoint,

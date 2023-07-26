@@ -1,7 +1,9 @@
 use std::fmt;
 
 use path::Path;
+use serde::Deserialize;
 
+#[derive(Debug, Deserialize)]
 pub struct ChoicePoint {
     has_condition: bool,
     has_start_content: bool,

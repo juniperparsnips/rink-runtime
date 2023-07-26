@@ -3,6 +3,7 @@ use runtime::container::Container;
 use runtime::RuntimeObject;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct RuntimeGraph {
     ink_version: u32,
     root_container: Rc<Container>,

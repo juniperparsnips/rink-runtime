@@ -21,6 +21,7 @@ use runtime::tag::Tag;
 use runtime::value::Value;
 use runtime::variable::{ReadCount, VariableAssignment, VariableReference};
 
+#[derive(Debug)]
 pub enum RuntimeObject {
     Choice(ChoicePoint),
     Container(Rc<Container>),

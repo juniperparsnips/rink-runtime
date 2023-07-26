@@ -1,6 +1,8 @@
 use path::Path;
+use serde::Deserialize;
 use std::fmt;
 
+#[derive(Debug, Deserialize)]
 pub struct VariableAssignment {
     name: String,
     is_new_declaration: bool,
@@ -39,6 +41,7 @@ impl fmt::Display for VariableAssignment {
     }
 }
 
+#[derive(Debug, Deserialize)]
 pub struct VariableReference {
     name: String,
 }
@@ -59,6 +62,7 @@ impl fmt::Display for VariableReference {
     }
 }
 
+#[derive(Debug, Deserialize)]
 pub struct ReadCount {
     target: Path,
 }

@@ -4,7 +4,7 @@ use runtime::RuntimeObject;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Element {
     container: Rc<Container>,
     index: usize,
@@ -45,7 +45,7 @@ impl Element {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RuntimeContext {
     stack: Vec<Element>,
     in_expression_evaluation: bool,

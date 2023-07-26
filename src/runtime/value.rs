@@ -1,8 +1,9 @@
 use path::Path;
+use serde::Deserialize;
 
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub enum Value {
     Int(i32),
     Float(f32),

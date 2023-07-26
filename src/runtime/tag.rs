@@ -1,5 +1,8 @@
 use std::fmt;
 
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
 pub struct Tag {
     text: String,
 }

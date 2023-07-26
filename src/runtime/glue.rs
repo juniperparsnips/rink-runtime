@@ -1,9 +1,14 @@
 use std::fmt;
 
-#[derive(Debug, PartialEq)]
+use serde::Deserialize;
+
+#[derive(Debug, PartialEq, Deserialize)]
 pub enum Glue {
+    #[serde(rename = "<>")]
     Bidirectional,
+    #[serde(rename = "G<")]
     Left,
+    #[serde(rename = "G>")]
     Right,
 }
 
