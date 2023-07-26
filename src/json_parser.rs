@@ -1,4 +1,3 @@
-
 use std::error::Error;
 use std::fmt;
 use std::io::Read;
@@ -7,24 +6,23 @@ use std::rc::Rc;
 use error::InkError;
 use path::Path;
 
-use runtime::RuntimeObject;
-use runtime::value::Value;
-use runtime::glue::Glue;
+use runtime::choice_point::ChoicePoint;
+use runtime::container::Container;
 use runtime::control_command::ControlCommand;
 use runtime::divert::{Divert, TargetType};
-use runtime::choice_point::ChoicePoint;
-use runtime::variable::{VariableAssignment, VariableReference, ReadCount};
+use runtime::glue::Glue;
 use runtime::tag::Tag;
-use runtime::container::Container;
+use runtime::value::Value;
+use runtime::variable::{ReadCount, VariableAssignment, VariableReference};
+use runtime::RuntimeObject;
 use runtime_graph::RuntimeGraph;
 
 use serde::de::Error as SerdeError;
-use serde::de::{Deserialize, Deserializer, Visitor, MapAccess, SeqAccess};
+use serde::de::{Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
 
 use serde_json;
 
-struct RuntimeGraphVisitor {
-}
+struct RuntimeGraphVisitor {}
 
 impl RuntimeGraphVisitor {
     fn new() -> Self {
@@ -32,8 +30,7 @@ impl RuntimeGraphVisitor {
     }
 }
 
-impl<'de> Visitor<'de> for RuntimeGraphVisitor
-{
+impl<'de> Visitor<'de> for RuntimeGraphVisitor {
     // Our Visitor is going to produce a RuntimeGraph.
     type Value = RuntimeGraph;
 
@@ -43,28 +40,35 @@ impl<'de> Visitor<'de> for RuntimeGraphVisitor
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
+    where
+        A: MapAccess<'de>,
     {
         let ink_version = match map.next_entry()? as Option<(&str, u32)> {
-            Some(("inkVersion", value)) => Some(value) ,
-            _ => None
-        }.ok_or(SerdeError::custom("Invalid runtime graph format, expected inkVersion"))?;
+            Some(("inkVersion", value)) => Some(value),
+            _ => None,
+        }
+        .ok_or(SerdeError::custom(
+            "Invalid runtime graph format, expected inkVersion",
+        ))?;
 
         let container = match map.next_entry()? as Option<(&str, RuntimeObject)> {
-            Some(("root", value)) => {
-                match value {
-                    RuntimeObject::Container(container) => Some(container),
-                    _ => None
-                }
+            Some(("root", value)) => match value {
+                RuntimeObject::Container(container) => Some(container),
+                _ => None,
             },
-            _ => None
-        }.ok_or(SerdeError::custom("Invalid runtime graph format, expected root"))?;
+            _ => None,
+        }
+        .ok_or(SerdeError::custom(
+            "Invalid runtime graph format, expected root",
+        ))?;
 
         let _list_defs = match map.next_entry()? as Option<(&str, ListDefinitions)> {
             Some(("listDefs", value)) => Some(value),
-            _ => None
-        }.ok_or(SerdeError::custom("Invalid runtime graph format, expected listDefs"))?;
+            _ => None,
+        }
+        .ok_or(SerdeError::custom(
+            "Invalid runtime graph format, expected listDefs",
+        ))?;
 
         Ok(RuntimeGraph::new(ink_version, container))
     }
@@ -72,7 +76,8 @@ impl<'de> Visitor<'de> for RuntimeGraphVisitor
 
 impl<'de> Deserialize<'de> for RuntimeGraph {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         // Instantiate our Visitor and ask the Deserializer to drive
         // it over the input data, resulting in an instance of RuntimeGraph.
@@ -80,8 +85,7 @@ impl<'de> Deserialize<'de> for RuntimeGraph {
     }
 }
 
-struct RuntimeObjectVisitor {
-}
+struct RuntimeObjectVisitor {}
 
 impl RuntimeObjectVisitor {
     fn new() -> Self {
@@ -89,8 +93,7 @@ impl RuntimeObjectVisitor {
     }
 }
 
-impl<'de> Visitor<'de> for RuntimeObjectVisitor
-{
+impl<'de> Visitor<'de> for RuntimeObjectVisitor {
     // Our Visitor is going to produce a RuntimeObject.
     type Value = RuntimeObject;
 
@@ -100,79 +103,82 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
     }
 
     fn visit_i8<E>(self, v: i8) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
     fn visit_i16<E>(self, v: i16) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_i32<E>(self, v: i32) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v)))
     }
 
     fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Int(v as i32)))
     }
 
     fn visit_f32<E>(self, v: f32) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Float(v)))
     }
 
     fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
-        where
-            E: Error,
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Value(Value::Float(v as f32)))
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where E: SerdeError,
+    where
+        E: SerdeError,
     {
         if v.starts_with("^") {
-            return Ok(RuntimeObject::Value(Value::String(v.chars().skip(1).collect())));
+            return Ok(RuntimeObject::Value(Value::String(
+                v.chars().skip(1).collect(),
+            )));
         }
 
         match v {
@@ -188,7 +194,9 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
             "out" => Ok(RuntimeObject::ControlCommand(ControlCommand::EvalOutput)),
             "/ev" => Ok(RuntimeObject::ControlCommand(ControlCommand::EvalEnd)),
             "du" => Ok(RuntimeObject::ControlCommand(ControlCommand::Duplicate)),
-            "pop" => Ok(RuntimeObject::ControlCommand(ControlCommand::PopEvaluatedValue)),
+            "pop" => Ok(RuntimeObject::ControlCommand(
+                ControlCommand::PopEvaluatedValue,
+            )),
             "~ret" => Ok(RuntimeObject::ControlCommand(ControlCommand::PopFunction)),
             "->->" => Ok(RuntimeObject::ControlCommand(ControlCommand::PopTunnel)),
             "str" => Ok(RuntimeObject::ControlCommand(ControlCommand::BeginString)),
@@ -200,7 +208,9 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
             "rnd" => Ok(RuntimeObject::ControlCommand(ControlCommand::Random)),
             "srnd" => Ok(RuntimeObject::ControlCommand(ControlCommand::SeedRandom)),
             "visit" => Ok(RuntimeObject::ControlCommand(ControlCommand::VisitIndex)),
-            "seq" => Ok(RuntimeObject::ControlCommand(ControlCommand::SequenceShuffleIndex)),
+            "seq" => Ok(RuntimeObject::ControlCommand(
+                ControlCommand::SequenceShuffleIndex,
+            )),
             "thread" => Ok(RuntimeObject::ControlCommand(ControlCommand::StartThread)),
             "done" => Ok(RuntimeObject::ControlCommand(ControlCommand::Done)),
             "end" => Ok(RuntimeObject::ControlCommand(ControlCommand::End)),
@@ -213,30 +223,30 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
             // Void
             "void" => Ok(RuntimeObject::Void),
 
-            _ => Err(SerdeError::custom("Invalid String"))
+            _ => Err(SerdeError::custom("Invalid String")),
         }
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
+    where
+        A: MapAccess<'de>,
     {
-        let mut opt_key : Option<&str> = map.next_key()?;
+        let mut opt_key: Option<&str> = map.next_key()?;
         if let &Some(key) = &opt_key {
             match key {
                 // Divert target value to path
                 "^->" => {
                     let value: Option<&str> = map.next_value()?;
                     match value {
-                        Some(target) => {
-                            match Path::from_str(target) {
-                                Some(path) => return Ok(RuntimeObject::Value(Value::DivertTarget(path))),
-                                _ => return Err(SerdeError::custom("Cannot parse target path"))
+                        Some(target) => match Path::from_str(target) {
+                            Some(path) => {
+                                return Ok(RuntimeObject::Value(Value::DivertTarget(path)))
                             }
-                        }
-                        _ => return Err(SerdeError::custom("Unexpected divert target value type"))
+                            _ => return Err(SerdeError::custom("Cannot parse target path")),
+                        },
+                        _ => return Err(SerdeError::custom("Unexpected divert target value type")),
                     }
-                },
+                }
 
                 // VariablePointerValue
                 "^var" => {
@@ -247,11 +257,18 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                             if let Some(("ci", value)) = map.next_entry()? as Option<(&str, i32)> {
                                 context_index = value;
                             }
-                            return Ok(RuntimeObject::Value(Value::VariablePointer(name.to_owned(), context_index)))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected variable pointer value type"))
+                            return Ok(RuntimeObject::Value(Value::VariablePointer(
+                                name.to_owned(),
+                                context_index,
+                            )));
+                        }
+                        _ => {
+                            return Err(SerdeError::custom(
+                                "Unexpected variable pointer value type",
+                            ))
+                        }
                     }
-                },
+                }
 
                 // Divert
                 "->" => {
@@ -270,11 +287,15 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                                     if let Some(("c", true)) = map.next_entry()? {
                                         divert.set_is_conditional(true);
                                     }
-                                },
+                                }
                                 _ => {
                                     match Path::from_str(target) {
                                         Some(path) => divert.set_target(TargetType::Path(path)),
-                                        _ => return Err(SerdeError::custom("Cannot parse divert target path"))
+                                        _ => {
+                                            return Err(SerdeError::custom(
+                                                "Cannot parse divert target path",
+                                            ))
+                                        }
                                     }
 
                                     // Case {"->": "variableTarget", "c": true}
@@ -283,11 +304,11 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                                     }
                                 }
                             }
-                            return Ok(RuntimeObject::Divert(divert))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected divert type"))
+                            return Ok(RuntimeObject::Divert(divert));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected divert type")),
                     }
-                },
+                }
 
                 // Function Call
                 "f()" => {
@@ -298,7 +319,7 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
                             match Path::from_str(target) {
                                 Some(path) => divert.set_target(TargetType::Path(path)),
-                                _ => return Err(SerdeError::custom("Cannot parse target path"))
+                                _ => return Err(SerdeError::custom("Cannot parse target path")),
                             }
 
                             // Case {"f()": "path.to.func", "c": true}
@@ -306,11 +327,11 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                                 divert.set_is_conditional(true);
                             }
 
-                            return Ok(RuntimeObject::Divert(divert))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected function call type"))
+                            return Ok(RuntimeObject::Divert(divert));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected function call type")),
                     }
-                },
+                }
 
                 // Tunnel
                 "->t->" => {
@@ -321,7 +342,7 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
                             match Path::from_str(target) {
                                 Some(path) => divert.set_target(TargetType::Path(path)),
-                                _ => return Err(SerdeError::custom("Cannot parse target path"))
+                                _ => return Err(SerdeError::custom("Cannot parse target path")),
                             }
 
                             // Case {"->t->": "path.tunnel", "c": true}
@@ -329,11 +350,11 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                                 divert.set_is_conditional(true);
                             }
 
-                            return Ok(RuntimeObject::Divert(divert))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected tunnel type"))
+                            return Ok(RuntimeObject::Divert(divert));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected tunnel type")),
                     }
-                },
+                }
 
                 // External function
                 "x()" => {
@@ -344,7 +365,7 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
                             match Path::from_str(target) {
                                 Some(path) => divert.set_target(TargetType::Path(path)),
-                                _ => return Err(SerdeError::custom("Cannot parse target path"))
+                                _ => return Err(SerdeError::custom("Cannot parse target path")),
                             }
 
                             // Case {"x()": "externalFuncName", "exArgs": 5}
@@ -357,11 +378,11 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                                 divert.set_is_conditional(true);
                             }
 
-                            return Ok(RuntimeObject::Divert(divert))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected external function type"))
+                            return Ok(RuntimeObject::Divert(divert));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected external function type")),
                     }
-                },
+                }
 
                 // Choice
                 "*" => {
@@ -372,43 +393,45 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
                             match Path::from_str(target) {
                                 Some(path) => choice.set_path_on_choice(path),
-                                _ => return Err(SerdeError::custom("Cannot parse choice path"))
+                                _ => return Err(SerdeError::custom("Cannot parse choice path")),
                             }
 
                             if let Some(("flg", flags)) = map.next_entry()? {
                                 choice.set_flags(flags);
                             }
 
-                            return Ok(RuntimeObject::Choice(choice))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected choice type"))
+                            return Ok(RuntimeObject::Choice(choice));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected choice type")),
                     }
-                },
+                }
 
                 // Variable reference
                 "VAR?" => {
                     let value: Option<&str> = map.next_value()?;
                     match value {
                         Some(name) => {
-                            return Ok(RuntimeObject::VariableReference(VariableReference::new(name.to_owned())))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected variable reference type"))
+                            return Ok(RuntimeObject::VariableReference(VariableReference::new(
+                                name.to_owned(),
+                            )))
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected variable reference type")),
                     }
-                },
+                }
 
                 // Read Count
                 "CNT?" => {
                     let value: Option<&str> = map.next_value()?;
                     match value {
-                        Some(target) => {
-                            match Path::from_str(target) {
-                                Some(path) => return Ok(RuntimeObject::ReadCount(ReadCount::new(path))),
-                                _ => return Err(SerdeError::custom("Cannot parse read count target"))
+                        Some(target) => match Path::from_str(target) {
+                            Some(path) => {
+                                return Ok(RuntimeObject::ReadCount(ReadCount::new(path)))
                             }
+                            _ => return Err(SerdeError::custom("Cannot parse read count target")),
                         },
-                        _ => return Err(SerdeError::custom("Unexpected read count type"))
+                        _ => return Err(SerdeError::custom("Unexpected read count type")),
                     }
-                },
+                }
 
                 // Variable assignment
                 "VAR=" => {
@@ -416,39 +439,47 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                     match value {
                         Some(name) => {
                             if let Some(("re", re)) = map.next_entry()? as Option<(&str, bool)> {
-                                return Ok(RuntimeObject::VariableAssignment(VariableAssignment::new(name.to_owned(), !re, true)))
+                                return Ok(RuntimeObject::VariableAssignment(
+                                    VariableAssignment::new(name.to_owned(), !re, true),
+                                ));
                             }
 
-                            return Ok(RuntimeObject::VariableAssignment(VariableAssignment::new(name.to_owned(), true, true)))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected variable assignment type"))
+                            return Ok(RuntimeObject::VariableAssignment(VariableAssignment::new(
+                                name.to_owned(),
+                                true,
+                                true,
+                            )));
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected variable assignment type")),
                     }
-                },
+                }
 
                 // Temporary variable
                 "temp=" => {
                     let value: Option<&str> = map.next_value()?;
                     match value {
                         Some(name) => {
-                            return Ok(RuntimeObject::VariableAssignment(VariableAssignment::new(name.to_owned(), true, false)))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected temporary variable type"))
+                            return Ok(RuntimeObject::VariableAssignment(VariableAssignment::new(
+                                name.to_owned(),
+                                true,
+                                false,
+                            )))
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected temporary variable type")),
                     }
-                },
+                }
 
                 // Tag
                 "#" => {
                     let value: Option<&str> = map.next_value()?;
                     match value {
-                        Some(tag) => {
-                            return Ok(RuntimeObject::Tag(Tag::new(tag.to_owned())))
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected temp var name type"))
+                        Some(tag) => return Ok(RuntimeObject::Tag(Tag::new(tag.to_owned()))),
+                        _ => return Err(SerdeError::custom("Unexpected temp var name type")),
                     }
-                },
+                }
 
                 // List
-                "list" => { return Err(SerdeError::custom("TODO")) },
+                "list" => return Err(SerdeError::custom("TODO")),
 
                 _ => {}
             }
@@ -470,10 +501,10 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                             if let Some(ref mut container_ref) = opt_container.as_mut() {
                                 container_ref.set_name(name.to_owned());
                             }
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected container name type"))
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected container name type")),
                     }
-                },
+                }
 
                 // Container flags
                 "#f" => {
@@ -487,35 +518,39 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
                             if let Some(ref mut container_ref) = opt_container.as_mut() {
                                 container_ref.set_count_flags(flags);
                             }
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected container flags type"))
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected container flags type")),
                     }
-                },
+                }
 
                 // Sub-container
                 _ => {
                     let value: Option<RuntimeObject> = map.next_value()?;
                     match value {
                         Some(obj) => {
-                            if let RuntimeObject::Container(mut sub_container_rc) = obj
-                                {
-                                    if opt_container.is_none() {
-                                        opt_container = Some(Container::new());
-                                    }
+                            if let RuntimeObject::Container(mut sub_container_rc) = obj {
+                                if opt_container.is_none() {
+                                    opt_container = Some(Container::new());
+                                }
 
-                                    match Rc::get_mut(&mut sub_container_rc) {
-                                        Some(sub_container) => sub_container.set_name(key.to_owned()),
-                                        _ => return Err(SerdeError::custom("Fail to get mutable sub-container"))
-                                    }
-
-                                    if let Some(ref mut container_ref) = opt_container.as_mut() {
-                                        container_ref.add_child(RuntimeObject::Container(sub_container_rc));
+                                match Rc::get_mut(&mut sub_container_rc) {
+                                    Some(sub_container) => sub_container.set_name(key.to_owned()),
+                                    _ => {
+                                        return Err(SerdeError::custom(
+                                            "Fail to get mutable sub-container",
+                                        ))
                                     }
                                 }
-                        },
-                        _ => return Err(SerdeError::custom("Unexpected sub-container type"))
+
+                                if let Some(ref mut container_ref) = opt_container.as_mut() {
+                                    container_ref
+                                        .add_child(RuntimeObject::Container(sub_container_rc));
+                                }
+                            }
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected sub-container type")),
                     }
-                },
+                }
             }
 
             opt_key = map.next_key()?;
@@ -525,12 +560,14 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
             return Ok(RuntimeObject::Container(Rc::new(container)));
         }
 
-        Err(SerdeError::custom("Runtime Object dictionary match not found"))
+        Err(SerdeError::custom(
+            "Runtime Object dictionary match not found",
+        ))
     }
 
     fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
-        where
-            V: SeqAccess<'de>,
+    where
+        V: SeqAccess<'de>,
     {
         let mut runtime_objects: Vec<RuntimeObject> = Vec::new();
 
@@ -540,25 +577,26 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
             if opt_child.is_some() {
                 runtime_objects.push(child);
-            }
-            else {
+            } else {
                 if let RuntimeObject::Container(mut container_rc) = child {
                     match Rc::get_mut(&mut container_rc) {
                         Some(container) => container.prepend(runtime_objects),
-                        _ => return Err(SerdeError::custom("Fail to get mutable container"))
+                        _ => return Err(SerdeError::custom("Fail to get mutable container")),
                     }
 
-                    return Ok(RuntimeObject::Container(container_rc))
+                    return Ok(RuntimeObject::Container(container_rc));
                 }
             }
         }
 
-        Ok(RuntimeObject::Container(Rc::new(Container::from_runtime_object_vec(runtime_objects))))
+        Ok(RuntimeObject::Container(Rc::new(
+            Container::from_runtime_object_vec(runtime_objects),
+        )))
     }
 
     fn visit_unit<E>(self) -> Result<Self::Value, E>
-        where
-            E: Error
+    where
+        E: Error,
     {
         Ok(RuntimeObject::Null)
     }
@@ -566,7 +604,8 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor
 
 impl<'de> Deserialize<'de> for RuntimeObject {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         // Instantiate our Visitor and ask the Deserializer to drive
         // it over the input data, resulting in an instance of RuntimeObject.
@@ -575,11 +614,9 @@ impl<'de> Deserialize<'de> for RuntimeObject {
 }
 
 // TODO
-struct ListDefinitions {
-}
+struct ListDefinitions {}
 
-struct ListDefinitionsVisitor {
-}
+struct ListDefinitionsVisitor {}
 
 impl ListDefinitionsVisitor {
     fn new() -> Self {
@@ -587,8 +624,7 @@ impl ListDefinitionsVisitor {
     }
 }
 
-impl<'de> Visitor<'de> for ListDefinitionsVisitor
-{
+impl<'de> Visitor<'de> for ListDefinitionsVisitor {
     // Our Visitor is going to produce a RuntimeGraph.
     type Value = ListDefinitions;
 
@@ -598,16 +634,17 @@ impl<'de> Visitor<'de> for ListDefinitionsVisitor
     }
 
     fn visit_map<A>(self, _map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
+    where
+        A: MapAccess<'de>,
     {
-        Ok(ListDefinitions{})
+        Ok(ListDefinitions {})
     }
 }
 
 impl<'de> Deserialize<'de> for ListDefinitions {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         // Instantiate our Visitor and ask the Deserializer to drive
         // it over the input data, resulting in an instance of ListDefinitions.
@@ -618,19 +655,17 @@ impl<'de> Deserialize<'de> for ListDefinitions {
 pub struct RuntimeGraphBuilder {}
 
 impl RuntimeGraphBuilder {
-    pub fn from_str(s: &str) -> Result<RuntimeGraph, InkError>
-    {
+    pub fn from_str(s: &str) -> Result<RuntimeGraph, InkError> {
         serde_json::from_str(s).map_err(|e| InkError::from(e))
     }
 
-    pub fn from_slice(v: &[u8]) -> Result<RuntimeGraph, InkError>
-    {
+    pub fn from_slice(v: &[u8]) -> Result<RuntimeGraph, InkError> {
         serde_json::from_slice(v).map_err(|e| InkError::from(e))
     }
 
     pub fn from_reader<R>(rdr: R) -> Result<RuntimeGraph, InkError>
-        where
-            R: Read
+    where
+        R: Read,
     {
         serde_json::from_reader(rdr).map_err(|e| InkError::from(e))
     }
@@ -638,6 +673,8 @@ impl RuntimeGraphBuilder {
 
 #[cfg(test)]
 mod tests {
+    use crate::runtime::divert::PushPopType;
+
     use super::*;
 
     #[test]
@@ -647,9 +684,9 @@ mod tests {
         match runtime_objects.get(0).unwrap() {
             &RuntimeObject::Value(ref value) => match value {
                 &Value::Int(int_value) => assert_eq!(int_value, 42),
-                _ => assert!(false)
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -660,9 +697,9 @@ mod tests {
         match runtime_objects.get(0).unwrap() {
             &RuntimeObject::Value(ref value) => match value {
                 &Value::Float(float_value) => assert_eq!(float_value, 3.14159265359),
-                _ => assert!(false)
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -672,10 +709,12 @@ mod tests {
         let runtime_objects: Vec<RuntimeObject> = serde_json::from_str(json).unwrap();
         match runtime_objects.get(0).unwrap() {
             &RuntimeObject::Value(ref value) => match value {
-                &Value::String(ref string_value) => assert_eq!(string_value, "I looked at Monsieur Fogg"),
-                _ => assert!(false)
+                &Value::String(ref string_value) => {
+                    assert_eq!(string_value, "I looked at Monsieur Fogg")
+                }
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -686,9 +725,9 @@ mod tests {
         match runtime_object {
             RuntimeObject::Value(ref value) => match value {
                 &Value::DivertTarget(ref path) => assert_eq!(path.to_string(), "0.g-0.2.$r1"),
-                _ => assert!(false)
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -701,10 +740,10 @@ mod tests {
                 Value::VariablePointer(name, context_index) => {
                     assert_eq!(name, "varname");
                     assert_eq!(context_index, 0);
-                },
-                _ => assert!(false)
+                }
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -715,9 +754,9 @@ mod tests {
         match runtime_objects.get(0).unwrap() {
             &RuntimeObject::Value(ref value) => match value {
                 &Value::String(ref string_value) => assert_eq!(string_value, "\n"),
-                _ => assert!(false)
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
@@ -734,7 +773,7 @@ mod tests {
 
             match runtime_object {
                 &RuntimeObject::Glue(ref value) => assert_eq!(value, glue),
-                _ => assert!(false)
+                _ => assert!(false),
             }
         }
     }
@@ -742,11 +781,30 @@ mod tests {
     #[test]
     fn control_command_test() {
         let json = "[\"ev\", \"out\", \"/ev\", \"du\", \"pop\", \"~ret\", \"->->\", \"str\", \"/str\", \"nop\", \"choiceCnt\", \"turns\", \"readc\", \"rnd\", \"srnd\", \"visit\", \"seq\", \"thread\", \"done\", \"end\", \"listInt\", \"range\"]";
-        let control_commands: Vec<ControlCommand> = vec![ControlCommand::EvalStart, ControlCommand::EvalOutput, ControlCommand::EvalEnd, ControlCommand::Duplicate,
-            ControlCommand::PopEvaluatedValue, ControlCommand::PopFunction, ControlCommand::PopTunnel, ControlCommand::BeginString, ControlCommand::EndString,
-            ControlCommand::NoOp, ControlCommand::ChoiceCount, ControlCommand::TurnsSince, ControlCommand::ReadCount, ControlCommand::Random, ControlCommand::SeedRandom,
-            ControlCommand::VisitIndex, ControlCommand::SequenceShuffleIndex, ControlCommand::StartThread, ControlCommand::Done, ControlCommand::End,
-            ControlCommand::ListFromInt, ControlCommand::ListRange];
+        let control_commands: Vec<ControlCommand> = vec![
+            ControlCommand::EvalStart,
+            ControlCommand::EvalOutput,
+            ControlCommand::EvalEnd,
+            ControlCommand::Duplicate,
+            ControlCommand::PopEvaluatedValue,
+            ControlCommand::PopFunction,
+            ControlCommand::PopTunnel,
+            ControlCommand::BeginString,
+            ControlCommand::EndString,
+            ControlCommand::NoOp,
+            ControlCommand::ChoiceCount,
+            ControlCommand::TurnsSince,
+            ControlCommand::ReadCount,
+            ControlCommand::Random,
+            ControlCommand::SeedRandom,
+            ControlCommand::VisitIndex,
+            ControlCommand::SequenceShuffleIndex,
+            ControlCommand::StartThread,
+            ControlCommand::Done,
+            ControlCommand::End,
+            ControlCommand::ListFromInt,
+            ControlCommand::ListRange,
+        ];
 
         let runtime_objects: Vec<RuntimeObject> = serde_json::from_str(json).unwrap();
         assert_eq!(control_commands.len(), runtime_objects.len());
@@ -756,7 +814,7 @@ mod tests {
 
             match runtime_object {
                 &RuntimeObject::ControlCommand(ref value) => assert_eq!(value, control_command),
-                _ => assert!(false)
+                _ => assert!(false),
             }
         }
     }
@@ -778,15 +836,15 @@ mod tests {
                 match divert.target().unwrap() {
                     &TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), ".^.s");
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
 
                 assert_eq!(divert.stack_push_type(), &PushPopType::None);
                 assert_eq!(divert.pushes_to_stack(), false);
                 assert_eq!(divert.is_conditional(), false);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -797,8 +855,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 assert_eq!(divert.is_conditional(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -811,15 +869,15 @@ mod tests {
                 match divert.target().unwrap() {
                     &TargetType::Name(ref target_name) => {
                         assert_eq!(target_name, "$r");
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
 
                 assert_eq!(divert.stack_push_type(), &PushPopType::None);
                 assert_eq!(divert.pushes_to_stack(), false);
                 assert_eq!(divert.is_conditional(), false);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -832,15 +890,15 @@ mod tests {
                 match divert.target().unwrap() {
                     &TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), "0.g-0.2.c.12.0.c.11.g-0.2.c.$r2");
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
 
                 assert_eq!(divert.stack_push_type(), &PushPopType::Function);
                 assert_eq!(divert.pushes_to_stack(), true);
                 assert_eq!(divert.is_conditional(), false);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -851,8 +909,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 assert_eq!(divert.is_conditional(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -865,15 +923,15 @@ mod tests {
                 match divert.target().unwrap() {
                     &TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), "0.g-0.2.c.12.0.c.11.g-0.2.$r1");
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
 
                 assert_eq!(divert.stack_push_type(), &PushPopType::Tunnel);
                 assert_eq!(divert.pushes_to_stack(), true);
                 assert_eq!(divert.is_conditional(), false);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -884,8 +942,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 assert_eq!(divert.is_conditional(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -898,16 +956,16 @@ mod tests {
                 match divert.target().unwrap() {
                     &TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), "0.g-0.3.$r1");
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
 
                 assert_eq!(divert.stack_push_type(), &PushPopType::Function);
                 assert_eq!(divert.pushes_to_stack(), false);
                 assert_eq!(divert.is_conditional(), false);
                 assert_eq!(divert.is_external(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -918,8 +976,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 assert_eq!(divert.external_args().unwrap(), 5);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -930,8 +988,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 assert_eq!(divert.is_conditional(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -947,8 +1005,8 @@ mod tests {
                 assert_eq!(choice.has_choice_only_content(), false);
                 assert_eq!(choice.is_invisible_default(), false);
                 assert_eq!(choice.once_only(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -959,8 +1017,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::VariableReference(variable) => {
                 assert_eq!(variable.name(), "danger");
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -971,8 +1029,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::ReadCount(variable) => {
                 assert_eq!(variable.target().to_string(), "the_hall.light_switch");
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -985,8 +1043,8 @@ mod tests {
                 assert_eq!(variable.name(), "money");
                 assert_eq!(variable.is_new_declaration(), true);
                 assert_eq!(variable.is_global(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -999,8 +1057,8 @@ mod tests {
                 assert_eq!(variable.name(), "money");
                 assert_eq!(variable.is_new_declaration(), false);
                 assert_eq!(variable.is_global(), true);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -1013,8 +1071,8 @@ mod tests {
                 assert_eq!(variable.name(), "x");
                 assert_eq!(variable.is_new_declaration(), true);
                 assert_eq!(variable.is_global(), false);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -1025,8 +1083,8 @@ mod tests {
         match runtime_object {
             RuntimeObject::Tag(tag) => {
                 assert_eq!(tag.text(), "This is a tag");
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -1039,13 +1097,11 @@ mod tests {
                 assert_eq!(container.len(), 2);
 
                 match container.get(0).unwrap() {
-                    &RuntimeObject::Value(ref value) => {
-                        match value {
-                            &Value::String(ref str) => assert_eq!(str, "'Ah"),
-                            _ => assert!(false)
-                        }
+                    &RuntimeObject::Value(ref value) => match value {
+                        &Value::String(ref str) => assert_eq!(str, "'Ah"),
+                        _ => assert!(false),
                     },
-                    _ => assert!(false)
+                    _ => assert!(false),
                 }
 
                 match container.get(1).unwrap() {
@@ -1053,18 +1109,18 @@ mod tests {
                         match divert.target().unwrap() {
                             &TargetType::Name(ref target_name) => {
                                 assert_eq!(target_name, "$r");
-                            },
-                            _ => assert!(false)
+                            }
+                            _ => assert!(false),
                         }
 
                         assert_eq!(divert.stack_push_type(), &PushPopType::None);
                         assert_eq!(divert.pushes_to_stack(), false);
                         assert_eq!(divert.is_conditional(), false);
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -1078,13 +1134,11 @@ mod tests {
                 assert_eq!(container.name().unwrap(), "container");
 
                 match container.get(0).unwrap() {
-                    &RuntimeObject::Value(ref value) => {
-                        match value {
-                            &Value::String(ref str) => assert_eq!(str, "test"),
-                            _ => assert!(false)
-                        }
+                    &RuntimeObject::Value(ref value) => match value {
+                        &Value::String(ref str) => assert_eq!(str, "test"),
+                        _ => assert!(false),
                     },
-                    _ => assert!(false)
+                    _ => assert!(false),
                 }
 
                 match container.get(1).unwrap() {
@@ -1095,23 +1149,23 @@ mod tests {
                         match sub_container.get(0).unwrap() {
                             &RuntimeObject::Value(ref value) => match value {
                                 &Value::Int(int_value) => assert_eq!(int_value, 5),
-                                _ => assert!(false)
+                                _ => assert!(false),
                             },
-                            _ => assert!(false)
+                            _ => assert!(false),
                         }
 
                         match sub_container.get(1).unwrap() {
                             &RuntimeObject::Value(ref value) => match value {
                                 &Value::Int(int_value) => assert_eq!(int_value, 6),
-                                _ => assert!(false)
+                                _ => assert!(false),
                             },
-                            _ => assert!(false)
+                            _ => assert!(false),
                         }
-                    },
-                    _ => assert!(false)
+                    }
+                    _ => assert!(false),
                 }
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 

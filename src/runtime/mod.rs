@@ -19,10 +19,7 @@ use runtime::glue::Glue;
 use runtime::native_function_call::NativeFunctionCall;
 use runtime::tag::Tag;
 use runtime::value::Value;
-use runtime::variable::{VariableAssignment, VariableReference, ReadCount};
-
-
-
+use runtime::variable::{ReadCount, VariableAssignment, VariableReference};
 
 pub enum RuntimeObject {
     Choice(ChoicePoint),
@@ -37,13 +34,15 @@ pub enum RuntimeObject {
     VariableReference(VariableReference),
     ReadCount(ReadCount),
     Void,
-    Null
+    Null,
 }
 
 impl fmt::Display for RuntimeObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            &RuntimeObject::ControlCommand(ref control_command) => write!(f, "{}", control_command.to_string()),
+            &RuntimeObject::ControlCommand(ref control_command) => {
+                write!(f, "{}", control_command.to_string())
+            }
             _ => write!(f, "TODO"),
         }
     }
@@ -53,7 +52,7 @@ impl RuntimeObject {
     pub fn is_container(&self) -> bool {
         match self {
             &RuntimeObject::Container(_) => true,
-            _ => false
+            _ => false,
         }
     }
 

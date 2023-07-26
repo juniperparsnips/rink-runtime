@@ -3,10 +3,10 @@
 /// functions that return `Option` because of the early return of `None` that
 /// it provides.
 macro_rules! try_opt {
-    ($e:expr) =>(
+    ($e:expr) => {
         match $e {
             Some(v) => v,
             None => return None,
         }
-    )
+    };
 }

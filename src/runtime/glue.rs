@@ -4,7 +4,7 @@ use std::fmt;
 pub enum Glue {
     Bidirectional,
     Left,
-    Right
+    Right,
 }
 
 impl fmt::Display for Glue {
@@ -12,7 +12,7 @@ impl fmt::Display for Glue {
         match *self {
             Glue::Bidirectional => write!(f, "<>"),
             Glue::Left => write!(f, "G<"),
-            Glue::Right => write!(f, "G>")
+            Glue::Right => write!(f, "G>"),
         }
     }
 }

@@ -2,19 +2,16 @@ use callstack::CallStack;
 use choice::Choice;
 use runtime_graph::RuntimeGraph;
 
-
-
-
 pub struct StoryState {
     callstack: CallStack,
-    choices: Vec<Choice>
+    choices: Vec<Choice>,
 }
 
 impl StoryState {
     pub fn new(runtime_graph: &RuntimeGraph) -> StoryState {
         StoryState {
             callstack: CallStack::new(runtime_graph.root_container()),
-            choices: Vec::new()
+            choices: Vec::new(),
         }
     }
 

@@ -2,7 +2,6 @@ use std::error;
 use std::fmt::{self, Debug, Display};
 use std::io;
 
-
 use serde_json;
 
 #[doc(hidden)]
@@ -15,29 +14,25 @@ pub enum InkErrorCode {
 
 #[derive(Debug)]
 pub struct InkError {
-    code: InkErrorCode
+    code: InkErrorCode,
 }
 
 impl InkError {
     pub fn new(code: InkErrorCode) -> Self {
-        InkError {
-            code: code
-        }
+        InkError { code: code }
     }
 }
 
 impl From<serde_json::Error> for InkError {
-     fn from(err: serde_json::Error) -> InkError {
-         use serde_json::error::Category;
-         match err.classify() {
-             Category::Io => {
-                 InkError::new(InkErrorCode::Io(err.into()))
-             }
-             Category::Syntax | Category::Data | Category::Eof => {
-                 InkError::new(InkErrorCode::Json(err))
-             }
-         }
-     }
+    fn from(err: serde_json::Error) -> InkError {
+        use serde_json::error::Category;
+        match err.classify() {
+            Category::Io => InkError::new(InkErrorCode::Io(err.into())),
+            Category::Syntax | Category::Data | Category::Eof => {
+                InkError::new(InkErrorCode::Json(err))
+            }
+        }
+    }
 }
 
 impl Display for InkErrorCode {

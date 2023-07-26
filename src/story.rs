@@ -6,40 +6,40 @@ use story_state::StoryState;
 
 use std::io::Read;
 
-pub const InkVersion: u32 = 17;
-pub const InkVersionMinimumCompatible: u32 = 16;
+pub const INK_VERSION: u32 = 17;
+pub const INK_VERSION_MINIMUM_COMPATIBLE: u32 = 16;
 
 pub struct Story {
     runtime_graph: RuntimeGraph,
-    state: StoryState
+    state: StoryState,
 }
 
 enum StoryFlow<'a> {
     Continue(&'a str),
     WaitForChoice,
-    End
+    End,
 }
 
 impl Story {
     pub fn from_str(s: &str) -> Result<Story, InkError> {
-        Story::new( RuntimeGraphBuilder::from_str(s)?)
+        Story::new(RuntimeGraphBuilder::from_str(s)?)
     }
 
     pub fn from_slice(v: &[u8]) -> Result<Story, InkError> {
-        Story::new( RuntimeGraphBuilder::from_slice(v)?)
+        Story::new(RuntimeGraphBuilder::from_slice(v)?)
     }
 
     pub fn from_reader<R>(rdr: R) -> Result<Story, InkError>
-        where
-            R: Read {
-        Story::new( RuntimeGraphBuilder::from_reader(rdr)?)
+    where
+        R: Read,
+    {
+        Story::new(RuntimeGraphBuilder::from_reader(rdr)?)
     }
 
     fn new(runtime_graph: RuntimeGraph) -> Result<Story, InkError> {
-        if runtime_graph.ink_version() > InkVersion {
+        if runtime_graph.ink_version() > INK_VERSION {
             return Err(InkError::new(InkErrorCode::Message("Version of ink used to build story is newer than the current version of the engine".to_owned())));
-        }
-        else if runtime_graph.ink_version() < InkVersionMinimumCompatible {
+        } else if runtime_graph.ink_version() < INK_VERSION_MINIMUM_COMPATIBLE {
             return Err(InkError::new(InkErrorCode::Message("Version of ink used to build story is too old to be loaded by this version of the engine".to_owned())));
         }
 
@@ -47,7 +47,7 @@ impl Story {
 
         Ok(Story {
             runtime_graph: runtime_graph,
-            state: state
+            state: state,
         })
     }
 
@@ -82,5 +82,4 @@ impl Story {
     pub fn make_choice(&self, _index: usize) -> bool {
         return false;
     }
-
 }

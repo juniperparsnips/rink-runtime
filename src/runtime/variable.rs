@@ -1,10 +1,10 @@
-use std::fmt;
 use path::Path;
+use std::fmt;
 
 pub struct VariableAssignment {
     name: String,
     is_new_declaration: bool,
-    is_global: bool
+    is_global: bool,
 }
 
 impl VariableAssignment {
@@ -12,7 +12,7 @@ impl VariableAssignment {
         VariableAssignment {
             name: name,
             is_new_declaration: is_new_declaration,
-            is_global: is_global
+            is_global: is_global,
         }
     }
 
@@ -40,14 +40,12 @@ impl fmt::Display for VariableAssignment {
 }
 
 pub struct VariableReference {
-    name: String
+    name: String,
 }
 
 impl VariableReference {
-    pub fn new(name: String) ->  VariableReference {
-        VariableReference {
-            name: name
-        }
+    pub fn new(name: String) -> VariableReference {
+        VariableReference { name: name }
     }
 
     pub fn name(&self) -> &str {
@@ -62,14 +60,12 @@ impl fmt::Display for VariableReference {
 }
 
 pub struct ReadCount {
-    target: Path
+    target: Path,
 }
 
 impl ReadCount {
-    pub fn new(target: Path) ->  ReadCount {
-        ReadCount {
-            target: target
-        }
+    pub fn new(target: Path) -> ReadCount {
+        ReadCount { target: target }
     }
 
     pub fn target(&self) -> &Path {

@@ -1,4 +1,3 @@
-
 use runtime::RuntimeObject;
 
 pub struct Container {
@@ -6,7 +5,7 @@ pub struct Container {
     name: Option<String>,
     visits_should_be_counted: bool,
     turn_index_should_be_counted: bool,
-    count_at_start_only: bool
+    count_at_start_only: bool,
 }
 
 impl Container {
@@ -16,7 +15,7 @@ impl Container {
             name: None,
             visits_should_be_counted: false,
             turn_index_should_be_counted: false,
-            count_at_start_only: false
+            count_at_start_only: false,
         }
     }
 
@@ -26,7 +25,7 @@ impl Container {
             name: None,
             visits_should_be_counted: false,
             turn_index_should_be_counted: false,
-            count_at_start_only: false
+            count_at_start_only: false,
         }
     }
 
@@ -70,8 +69,7 @@ impl Container {
         self.name.as_ref().map(|x| x.as_ref())
     }
 
-    pub fn set_name(&mut self, name: String)
-    {
+    pub fn set_name(&mut self, name: String) {
         self.name = Some(name);
     }
 
@@ -98,15 +96,15 @@ impl Container {
     }
 
     pub fn set_count_flags(&mut self, count_flags: u8) {
-        if count_flags &  0x1 > 0 {
+        if count_flags & 0x1 > 0 {
             self.visits_should_be_counted = true;
         }
 
-        if count_flags &  0x2 > 0 {
+        if count_flags & 0x2 > 0 {
             self.turn_index_should_be_counted = true;
         }
 
-        if count_flags &  0x4 > 0 {
+        if count_flags & 0x4 > 0 {
             self.count_at_start_only = true;
         }
     }
@@ -152,7 +150,7 @@ impl Container {
         for runtime_object in &self.content {
             if let Some(other_name) = runtime_object.name() {
                 if name == other_name {
-                    return Some(runtime_object)
+                    return Some(runtime_object);
                 }
             }
         }

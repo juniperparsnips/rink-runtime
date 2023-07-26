@@ -1,21 +1,20 @@
-use runtime::RuntimeObject;
 use runtime::container::Container;
 use runtime::divert::PushPopType;
-
+use runtime::RuntimeObject;
 
 use std::rc::Rc;
 
 #[derive(Clone)]
 struct Element {
     container: Rc<Container>,
-    index: usize
+    index: usize,
 }
 
 impl Element {
     pub fn new(container: Rc<Container>) -> Element {
         Element {
             container: container,
-            index: 0
+            index: 0,
         }
     }
 
@@ -50,7 +49,7 @@ impl Element {
 pub struct RuntimeContext {
     stack: Vec<Element>,
     in_expression_evaluation: bool,
-    stack_push_type: PushPopType
+    stack_push_type: PushPopType,
 }
 
 /// Depth-first search (pre-order) of the runtime graph implemented as a LIFO stack.
@@ -59,7 +58,7 @@ impl RuntimeContext {
         RuntimeContext {
             stack: vec![Element::new(container.clone())],
             in_expression_evaluation: false,
-            stack_push_type: PushPopType::Tunnel
+            stack_push_type: PushPopType::Tunnel,
         }
     }
 
@@ -70,7 +69,7 @@ impl RuntimeContext {
         RuntimeContext {
             stack: stack,
             in_expression_evaluation: false,
-            stack_push_type: PushPopType::Tunnel
+            stack_push_type: PushPopType::Tunnel,
         }
     }
 
@@ -130,12 +129,11 @@ impl RuntimeContext {
             match element.next() {
                 Some(&RuntimeObject::Container(ref container)) => {
                     next_container = Some(container.clone());
-                },
+                }
                 Some(_runtime_object) => return true,
                 None => {}
             }
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -143,7 +141,7 @@ impl RuntimeContext {
             Some(container) => {
                 self.stack.push(Element::new(container));
                 true
-            },
+            }
             _ => {
                 if self.stack.len() == 1 {
                     return false;
@@ -167,38 +165,106 @@ mod tests {
         // [42, [10, "value1", [3.14]], "value2"]
         let mut root_container = Rc::new(Container::new());
 
-        Rc::get_mut(&mut root_container).unwrap().add_child(RuntimeObject::Value(Value::Int(42)));
+        Rc::get_mut(&mut root_container)
+            .unwrap()
+            .add_child(RuntimeObject::Value(Value::Int(42)));
 
         let mut sub_container = Rc::new(Container::new());
-        Rc::get_mut(&mut sub_container).unwrap().add_child(RuntimeObject::Value(Value::Int(10)));
-        Rc::get_mut(&mut sub_container).unwrap().add_child(RuntimeObject::Value(Value::String("value1".to_owned())));
+        Rc::get_mut(&mut sub_container)
+            .unwrap()
+            .add_child(RuntimeObject::Value(Value::Int(10)));
+        Rc::get_mut(&mut sub_container)
+            .unwrap()
+            .add_child(RuntimeObject::Value(Value::String("value1".to_owned())));
 
         let mut sub_sub_container = Rc::new(Container::new());
-        Rc::get_mut(&mut sub_sub_container).unwrap().add_child(RuntimeObject::Value(Value::Float(3.14)));
-        Rc::get_mut(&mut sub_container).unwrap().add_child(RuntimeObject::Container(sub_sub_container));
+        Rc::get_mut(&mut sub_sub_container)
+            .unwrap()
+            .add_child(RuntimeObject::Value(Value::Float(3.14)));
+        Rc::get_mut(&mut sub_container)
+            .unwrap()
+            .add_child(RuntimeObject::Container(sub_sub_container));
 
-        Rc::get_mut(&mut root_container).unwrap().add_child(RuntimeObject::Container(sub_container));
-        Rc::get_mut(&mut root_container).unwrap().add_child(RuntimeObject::Value(Value::String("value2".to_owned())));
+        Rc::get_mut(&mut root_container)
+            .unwrap()
+            .add_child(RuntimeObject::Container(sub_container));
+        Rc::get_mut(&mut root_container)
+            .unwrap()
+            .add_child(RuntimeObject::Value(Value::String("value2".to_owned())));
 
         let mut runtime_context = RuntimeContext::new(&root_container);
 
-        assert_eq!(runtime_context.get().unwrap().as_value().unwrap().as_int().unwrap(), 42);
+        assert_eq!(
+            runtime_context
+                .get()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_int()
+                .unwrap(),
+            42
+        );
         assert_eq!(runtime_context.depth(), 1);
 
-        assert_eq!(runtime_context.next().unwrap().as_value().unwrap().as_int().unwrap(), 10);
+        assert_eq!(
+            runtime_context
+                .next()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_int()
+                .unwrap(),
+            10
+        );
         assert_eq!(runtime_context.depth(), 2);
 
-        assert_eq!(runtime_context.next().unwrap().as_value().unwrap().as_string().unwrap(), "value1");
+        assert_eq!(
+            runtime_context
+                .next()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_string()
+                .unwrap(),
+            "value1"
+        );
         assert_eq!(runtime_context.depth(), 2);
 
-        assert_eq!(runtime_context.next().unwrap().as_value().unwrap().as_float().unwrap(), 3.14);
+        assert_eq!(
+            runtime_context
+                .next()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_float()
+                .unwrap(),
+            3.14
+        );
         assert_eq!(runtime_context.depth(), 3);
 
-        assert_eq!(runtime_context.next().unwrap().as_value().unwrap().as_string().unwrap(), "value2");
+        assert_eq!(
+            runtime_context
+                .next()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_string()
+                .unwrap(),
+            "value2"
+        );
         assert_eq!(runtime_context.depth(), 1);
 
         assert!(runtime_context.next().is_none());
-        assert_eq!(runtime_context.get().unwrap().as_value().unwrap().as_string().unwrap(), "value2");
+        assert_eq!(
+            runtime_context
+                .get()
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_string()
+                .unwrap(),
+            "value2"
+        );
     }
 
     #[test]

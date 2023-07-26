@@ -1,14 +1,12 @@
 use std::fmt;
 
 pub struct Tag {
-    text: String
+    text: String,
 }
 
 impl Tag {
     pub fn new(text: String) -> Tag {
-        Tag {
-            text: text
-        }
+        Tag { text: text }
     }
 
     pub fn text(&self) -> &String {

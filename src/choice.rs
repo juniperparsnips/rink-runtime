@@ -1,11 +1,11 @@
-use runtime::choice_point::ChoicePoint;
 use callstack::Thread;
 use path::Path;
+use runtime::choice_point::ChoicePoint;
 
 pub struct Choice {
     text: Option<String>,
     choice_point: ChoicePoint,
-    thread: Thread
+    thread: Thread,
 }
 
 impl Choice {
@@ -13,14 +13,14 @@ impl Choice {
         Choice {
             text: None,
             choice_point: choice_point,
-            thread: thread
+            thread: thread,
         }
     }
 
     pub fn text(&self) -> Option<&str> {
         match self.text {
             Some(ref text) => Some(&text),
-            _ => None
+            _ => None,
         }
     }
 

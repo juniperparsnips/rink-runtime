@@ -4,13 +4,13 @@ use path::Path;
 pub enum PushPopType {
     Tunnel,
     Function,
-    None
+    None,
 }
 
 #[derive(PartialEq)]
 pub enum TargetType {
     Name(String),
-    Path(Path)
+    Path(Path),
 }
 
 pub struct Divert {
@@ -19,7 +19,7 @@ pub struct Divert {
     pushes_to_stack: bool,
     external_args: Option<u32>,
     is_external: bool,
-    is_conditional: bool
+    is_conditional: bool,
 }
 
 impl Divert {
@@ -30,7 +30,7 @@ impl Divert {
             pushes_to_stack: false,
             external_args: None,
             is_external: false,
-            is_conditional: false
+            is_conditional: false,
         }
     }
 
@@ -38,10 +38,10 @@ impl Divert {
         Divert {
             target: None,
             stack_push_type: PushPopType::Function,
-            pushes_to_stack:true,
+            pushes_to_stack: true,
             external_args: None,
             is_external: false,
-            is_conditional: false
+            is_conditional: false,
         }
     }
 
@@ -49,10 +49,10 @@ impl Divert {
         Divert {
             target: None,
             stack_push_type: PushPopType::Tunnel,
-            pushes_to_stack:true,
+            pushes_to_stack: true,
             external_args: None,
             is_external: false,
-            is_conditional: false
+            is_conditional: false,
         }
     }
 
@@ -60,10 +60,10 @@ impl Divert {
         Divert {
             target: None,
             stack_push_type: PushPopType::Function,
-            pushes_to_stack:false,
+            pushes_to_stack: false,
             external_args: None,
             is_external: true,
-            is_conditional: false
+            is_conditional: false,
         }
     }
 

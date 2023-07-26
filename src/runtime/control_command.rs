@@ -73,7 +73,7 @@ pub enum ControlCommand {
     End,
 
     ListFromInt,
-    ListRange
+    ListRange,
 }
 
 impl fmt::Display for ControlCommand {

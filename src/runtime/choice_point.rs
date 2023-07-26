@@ -8,7 +8,7 @@ pub struct ChoicePoint {
     has_choice_only_content: bool,
     is_invisible_default: bool,
     once_only: bool,
-    path_on_choice: Option<Path>
+    path_on_choice: Option<Path>,
 }
 
 impl ChoicePoint {
@@ -19,7 +19,7 @@ impl ChoicePoint {
             has_choice_only_content: false,
             is_invisible_default: false,
             once_only: false,
-            path_on_choice: None
+            path_on_choice: None,
         }
     }
 
@@ -82,8 +82,8 @@ impl ChoicePoint {
             Some(ref path) => {
                 // TODO
                 Some(path)
-            },
-            _ => None
+            }
+            _ => None,
         }
     }
 

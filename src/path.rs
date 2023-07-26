@@ -1,11 +1,11 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::slice::{Iter};
+use std::slice::Iter;
 
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub enum Fragment {
     Index(usize),
-    Name(String)
+    Name(String),
 }
 
 impl fmt::Display for Fragment {
@@ -20,14 +20,14 @@ impl fmt::Display for Fragment {
 #[derive(Clone, Debug)]
 pub struct Path {
     fragments: Vec<Fragment>,
-    is_relative: bool
+    is_relative: bool,
 }
 
 impl Path {
     fn from_fragments(fragments: Vec<Fragment>, is_relative: bool) -> Path {
         Path {
             fragments: fragments,
-            is_relative: is_relative
+            is_relative: is_relative,
         }
     }
 
@@ -35,11 +35,11 @@ impl Path {
         self.is_relative
     }
 
-    pub fn first(&self) -> Option<&Fragment>  {
+    pub fn first(&self) -> Option<&Fragment> {
         self.fragments.first()
     }
 
-    pub fn last(&self) -> Option<&Fragment>  {
+    pub fn last(&self) -> Option<&Fragment> {
         self.fragments.last()
     }
 
@@ -67,16 +67,16 @@ impl Path {
             path
         };
 
-        let fragments: Vec<Fragment> = new_path.split('.').map(|ref token| {
-            match token.parse::<usize>() {
+        let fragments: Vec<Fragment> = new_path
+            .split('.')
+            .map(|ref token| match token.parse::<usize>() {
                 Ok(index) => Fragment::Index(index),
                 Err(_) => Fragment::Name(token.to_string()),
-            }
-        }).collect();
+            })
+            .collect();
 
         Some(Path::from_fragments(fragments, is_relative))
     }
-
 }
 
 impl fmt::Display for Path {
@@ -85,7 +85,15 @@ impl fmt::Display for Path {
             try!(write!(f, "."));
         }
 
-        write!(f, "{}", self.fragments.iter().map(|ref fragment| fragment.to_string()).collect::<Vec<_>>().join("."))
+        write!(
+            f,
+            "{}",
+            self.fragments
+                .iter()
+                .map(|ref fragment| fragment.to_string())
+                .collect::<Vec<_>>()
+                .join(".")
+        )
     }
 }
 

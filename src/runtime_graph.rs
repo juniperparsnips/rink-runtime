@@ -1,18 +1,18 @@
-use path::{Path, Fragment};
+use path::{Fragment, Path};
 use runtime::container::Container;
 use runtime::RuntimeObject;
 use std::rc::Rc;
 
 pub struct RuntimeGraph {
     ink_version: u32,
-    root_container: Rc<Container>
+    root_container: Rc<Container>,
 }
 
 impl RuntimeGraph {
     pub fn new(ink_version: u32, container: Rc<Container>) -> RuntimeGraph {
         RuntimeGraph {
             ink_version: ink_version,
-            root_container: container
+            root_container: container,
         }
     }
 
@@ -31,37 +31,32 @@ impl RuntimeGraph {
         let mut it = path.iter();
         while let Some(fragment) = it.next() {
             match fragment {
-                &Fragment::Index(index) => {
-                    match current_container.get(index) {
-                        Some(child) => {
-                            if let &RuntimeObject::Container(ref container) = child {
-                                current_container = container;
-                            }
+                &Fragment::Index(index) => match current_container.get(index) {
+                    Some(child) => {
+                        if let &RuntimeObject::Container(ref container) = child {
+                            current_container = container;
+                        }
 
-                            runtime_object = Some(child);
-                        },
-                        _ => return None
+                        runtime_object = Some(child);
                     }
+                    _ => return None,
                 },
-                &Fragment::Name(ref name) => {
-                    match current_container.search_by_name(name) {
-                        Some(child) => {
-                            if let &RuntimeObject::Container(ref container) = child {
-                                current_container = container;
-                            }
+                &Fragment::Name(ref name) => match current_container.search_by_name(name) {
+                    Some(child) => {
+                        if let &RuntimeObject::Container(ref container) = child {
+                            current_container = container;
+                        }
 
-                            runtime_object = Some(child);
-                        },
-                        _ => return None
+                        runtime_object = Some(child);
                     }
-                }
+                    _ => return None,
+                },
             }
         }
 
         runtime_object
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -91,8 +86,8 @@ mod tests {
         match graph.resolve_path(&path.unwrap()) {
             Some(&RuntimeObject::Container(ref container)) => {
                 assert_eq!(container.name().unwrap(), "c")
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -121,17 +116,14 @@ mod tests {
         child_level_1.add_child(RuntimeObject::Container(Rc::new(child_level_2)));
         root_container.add_child(RuntimeObject::Container(Rc::new(child_level_1)));
 
-        let graph = RuntimeGraph::new(17,Rc::new(root_container));
+        let graph = RuntimeGraph::new(17, Rc::new(root_container));
 
         match graph.resolve_path(&path.unwrap()) {
-            Some(&RuntimeObject::Divert(ref divert)) => {
-                match divert.target().unwrap() {
-                    &TargetType::Name(ref name) => assert_eq!(name, "mytarget"),
-                    _ => assert!(false)
-                }
-
+            Some(&RuntimeObject::Divert(ref divert)) => match divert.target().unwrap() {
+                &TargetType::Name(ref name) => assert_eq!(name, "mytarget"),
+                _ => assert!(false),
             },
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 }

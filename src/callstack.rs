@@ -3,20 +3,16 @@ use runtime::container::Container;
 use runtime::RuntimeObject;
 use runtime_context::RuntimeContext;
 
-
-
 use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Thread {
-    stack: Vec<RuntimeContext>
+    stack: Vec<RuntimeContext>,
 }
 
 impl<'ru> Thread {
     pub fn new() -> Thread {
-        Thread {
-            stack: Vec::new()
-        }
+        Thread { stack: Vec::new() }
     }
 
     pub fn stack(&self) -> &Vec<RuntimeContext> {
@@ -32,10 +28,12 @@ impl<'ru> Thread {
     }
 
     pub fn pop_if<F>(&mut self, f: F) -> Option<RuntimeContext>
-        where F: FnOnce(&RuntimeContext) -> bool {
+    where
+        F: FnOnce(&RuntimeContext) -> bool,
+    {
         let should_pop = match self.stack.last() {
             Some(runtime_context) => f(runtime_context),
-            _ => false
+            _ => false,
         };
 
         // Need to do this because at the moment rust does not support Non-lexical borrow scopes
@@ -46,12 +44,11 @@ impl<'ru> Thread {
 
         None
     }
-
 }
 
 #[derive(Clone)]
 pub struct CallStack {
-    threads: Vec<Thread>
+    threads: Vec<Thread>,
 }
 
 impl<'ru> CallStack {
@@ -62,9 +59,7 @@ impl<'ru> CallStack {
         thread.push(RuntimeContext::new(root_container));
         threads.push(thread);
 
-        CallStack {
-            threads: threads
-        }
+        CallStack { threads: threads }
     }
 
     pub fn thread(&self) -> Option<&Thread> {
@@ -82,14 +77,14 @@ impl<'ru> CallStack {
     pub fn runtime_object(&self) -> Option<&RuntimeObject> {
         match self.runtime_context() {
             Some(runtime_context) => runtime_context.get(),
-            _ => None
+            _ => None,
         }
     }
 
     pub fn depth(&self) -> usize {
         match self.stack() {
             Some(stack) => stack.len(),
-            _ => 0
+            _ => 0,
         }
     }
 
@@ -109,7 +104,7 @@ impl<'ru> CallStack {
     pub fn pop_thread(&mut self) -> bool {
         match self.threads.pop() {
             Some(_) => true,
-            _ => false
+            _ => false,
         }
     }
 

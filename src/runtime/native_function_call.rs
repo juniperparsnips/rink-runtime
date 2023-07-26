@@ -1,3 +1,1 @@
-pub struct NativeFunctionCall {
-
-}
+pub struct NativeFunctionCall {}
