@@ -1,4 +1,4 @@
-use path::{Path, Fragment};
+
 use runtime::RuntimeObject;
 
 pub struct Container {

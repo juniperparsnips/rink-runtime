@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+
 use std::error::Error;
 use std::fmt;
 use std::io::Read;
@@ -11,7 +11,7 @@ use runtime::RuntimeObject;
 use runtime::value::Value;
 use runtime::glue::Glue;
 use runtime::control_command::ControlCommand;
-use runtime::divert::{Divert, PushPopType, TargetType};
+use runtime::divert::{Divert, TargetType};
 use runtime::choice_point::ChoicePoint;
 use runtime::variable::{VariableAssignment, VariableReference, ReadCount};
 use runtime::tag::Tag;
@@ -61,7 +61,7 @@ impl<'de> Visitor<'de> for RuntimeGraphVisitor
             _ => None
         }.ok_or(SerdeError::custom("Invalid runtime graph format, expected root"))?;
 
-        let list_defs = match map.next_entry()? as Option<(&str, ListDefinitions)> {
+        let _list_defs = match map.next_entry()? as Option<(&str, ListDefinitions)> {
             Some(("listDefs", value)) => Some(value),
             _ => None
         }.ok_or(SerdeError::custom("Invalid runtime graph format, expected listDefs"))?;
@@ -597,7 +597,7 @@ impl<'de> Visitor<'de> for ListDefinitionsVisitor
         formatter.write_str("List definitions")
     }
 
-    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    fn visit_map<A>(self, _map: A) -> Result<Self::Value, A::Error>
         where
             A: MapAccess<'de>,
     {

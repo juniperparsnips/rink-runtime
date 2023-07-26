@@ -1,6 +1,6 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::slice::{Iter, IterMut};
+use std::slice::{Iter};
 
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub enum Fragment {

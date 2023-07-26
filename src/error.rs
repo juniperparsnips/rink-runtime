@@ -1,7 +1,7 @@
 use std::error;
 use std::fmt::{self, Debug, Display};
 use std::io;
-use std::result;
+
 
 use serde_json;
 
@@ -62,7 +62,7 @@ impl error::Error for InkError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match self.code {
             InkErrorCode::Io(ref err) => Some(err),
             _ => None,

@@ -1,10 +1,10 @@
 use runtime::container::Container;
-use runtime::divert::PushPopType;
+
 use runtime::RuntimeObject;
 use runtime_context::RuntimeContext;
-use macros;
 
-use std::collections::HashMap;
+
+
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -33,7 +33,7 @@ impl<'ru> Thread {
 
     pub fn pop_if<F>(&mut self, f: F) -> Option<RuntimeContext>
         where F: FnOnce(&RuntimeContext) -> bool {
-        let mut should_pop = match self.stack.last() {
+        let should_pop = match self.stack.last() {
             Some(runtime_context) => f(runtime_context),
             _ => false
         };

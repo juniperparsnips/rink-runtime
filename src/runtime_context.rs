@@ -1,7 +1,7 @@
 use runtime::RuntimeObject;
 use runtime::container::Container;
 use runtime::divert::PushPopType;
-use macros;
+
 
 use std::rc::Rc;
 
@@ -131,7 +131,7 @@ impl RuntimeContext {
                 Some(&RuntimeObject::Container(ref container)) => {
                     next_container = Some(container.clone());
                 },
-                Some(runtime_object) => return true,
+                Some(_runtime_object) => return true,
                 None => {}
             }
         }

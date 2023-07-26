@@ -79,7 +79,7 @@ impl Story {
         Ok(StoryFlow::End)
     }
 
-    pub fn make_choice(&self, index: usize) -> bool {
+    pub fn make_choice(&self, _index: usize) -> bool {
         return false;
     }
 
