@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn resolve_path_by_index_test() {
-        use runtime::divert::{Divert, TargetType};
+        use crate::runtime::divert::{Divert, TargetType};
 
         let path = Path::from_str("a.b.1");
 

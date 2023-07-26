@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn runtime_context_test() {
-        use runtime::value::Value;
+        use crate::runtime::value::Value;
 
         // [42, [10, "value1", [3.14]], "value2"]
         let mut root_container = Rc::new(Container::new());
@@ -267,8 +267,6 @@ mod tests {
 
     #[test]
     fn empty_container_test() {
-        use runtime::value::Value;
-
         let mut root_container = Rc::new(Container::new());
         let mut runtime_context = RuntimeContext::new(&root_container);
 
