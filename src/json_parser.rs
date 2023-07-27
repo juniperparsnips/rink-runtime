@@ -778,7 +778,30 @@ mod tests {
 
     #[test]
     fn control_command_test() {
-        let json = "[\"ev\", \"out\", \"/ev\", \"du\", \"pop\", \"~ret\", \"->->\", \"str\", \"/str\", \"nop\", \"choiceCnt\", \"turns\", \"readc\", \"rnd\", \"srnd\", \"visit\", \"seq\", \"thread\", \"done\", \"end\", \"listInt\", \"range\"]";
+        let json = r#"[
+            "ev",
+            "out",
+            "/ev",
+            "du",
+            "pop",
+            "~ret",
+            "->->",
+            "str",
+            "/str",
+            "nop",
+            "choiceCnt",
+            "turns",
+            "readc",
+            "rnd",
+            "srnd",
+            "visit", 
+            "seq", 
+            "thread", 
+            "done", 
+            "end",
+            "listInt", 
+            "range"
+]"#;
         let control_commands: Vec<ControlCommand> = vec![
             ControlCommand::EvalStart,
             ControlCommand::EvalOutput,
@@ -1088,7 +1111,7 @@ mod tests {
 
     #[test]
     fn container_test() {
-        let json = "[\"^'Ah\",{\"->\":\"$r\",\"var\":true}, null]";
+        let json = r#"["^'Ah",{"->":"$r","var":true}, null]"#;
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Container(container) => {
@@ -1124,7 +1147,7 @@ mod tests {
 
     #[test]
     fn nested_container_test() {
-        let json = "[\"^test\",{\"subContainer\":[5,6,null],\"#f\":3,\"#n\":\"container\"}]";
+        let json = r###"["^test",{"subContainer":[5,6,null],"#f":3,"#n":"container"}]"###;
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Container(container) => {
