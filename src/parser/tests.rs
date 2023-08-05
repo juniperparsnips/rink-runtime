@@ -1,6 +1,8 @@
-use crate::runtime::divert::PushPopType;
-
 use super::*;
+use crate::runtime::divert::PushPopType;
+use colored::*;
+use rstest::*;
+use std::fs;
 
 #[test]
 fn value_int_test() {
@@ -537,3 +539,21 @@ fn ink_test_from_reader() {
     let inkObject = InkJSon::from_reader(reader).unwrap();
     assert_eq!(inkObject.ink_version, 17)
 }*/
+
+#[fixture]
+pub fn hello_world_compiled() -> String {
+    fs::read_to_string("tests/data/hello_world.json")
+        .expect("Should have been able to read the file")
+}
+
+#[rstest]
+fn run_hello_world(hello_world_compiled: String) {
+    // println!("{} {} {:?}", { "➤".blue() }, { "JSON content:".blue() }, {
+    //     hello_world_compiled.clone()
+    // });
+
+    // WIP: implement the list parsing. Even with the most simple hello world
+    // what is returned is a list (of 1 element)
+    let runtime_objects: Vec<RuntimeObject> =
+        serde_json::from_str(hello_world_compiled.as_str()).unwrap();
+}
