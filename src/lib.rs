@@ -1,11 +1,11 @@
 // #[macro_use]
 // mod macros;
 
-mod error;
-mod json_parser;
-mod path;
-mod runtime;
-mod runtime_graph;
+pub mod error;
+pub mod parser;
+pub mod path;
+pub mod runtime;
+pub mod runtime_graph;
 // mod ink_list;
 // mod callstack;
 // mod choice;
