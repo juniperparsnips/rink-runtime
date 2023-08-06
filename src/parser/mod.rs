@@ -1,3 +1,13 @@
+//! Module responsible for the parsing of the JSON runtime code
+//!
+//! It relies on the [visitor
+//! pattern](https://en.wikipedia.org/wiki/Visitor_pattern) as [used in the
+//! serde crate](https://docs.rs/serde/1.0.182/serde/de/trait.Visitor.html).
+//!
+//! Another rust example pattern can be found
+//! [here]((https://rust-unofficial.github.io/patterns/patterns/behavioural/visitor.html))
+//! for a better understanding.
+
 use std::{error::Error, fmt, io::Read, rc::Rc};
 
 use serde::de::{Deserialize, Deserializer, Error as SerdeError, MapAccess, SeqAccess, Visitor};
