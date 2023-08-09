@@ -1,3 +1,4 @@
+#![allow(unused)]
 use super::*;
 use crate::runtime::divert::PushPopType;
 use colored::*;

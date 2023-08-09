@@ -21,7 +21,7 @@ pub struct InkError {
 
 impl InkError {
     pub fn new(code: InkErrorCode) -> Self {
-        InkError { code: code }
+        InkError { code }
     }
 }
 
@@ -48,20 +48,21 @@ impl Display for InkErrorCode {
 }
 
 impl error::Error for InkError {
-    fn description(&self) -> &str {
-        match self.code {
-            InkErrorCode::Io(ref err) => error::Error::description(err),
-            InkErrorCode::Json(ref err) => serde_json::Error::description(err),
-            _ => {
-                // If you want a better message, use Display::fmt or to_string().
-                "Ink error"
-            }
-        }
-    }
+    // fn description(&self) -> &str {
+    //     match self.code {
+    //         InkErrorCode::Io(ref err) => error::Error::description(err),
+    //         InkErrorCode::Json(ref err) => serde_json::Error::description(err),
+    //         _ => {
+    //             // If you want a better message, use Display::fmt or to_string().
+    //             "Ink error"
+    //         }
+    //     }
+    // }
 
     fn cause(&self) -> Option<&dyn error::Error> {
         match self.code {
             InkErrorCode::Io(ref err) => Some(err),
+            InkErrorCode::Json(ref err) => Some(err),
             _ => None,
         }
     }

@@ -6,6 +6,9 @@ use crate::{
     runtime::RuntimeObject,
 };
 
+/// An object containing the runtime graph.
+///
+/// The deserialize trait is implemented in `parser/mod.rs`.
 #[derive(Debug)]
 pub struct RuntimeGraph {
     ink_version: u32,
@@ -83,7 +86,7 @@ mod tests {
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3)));
         child_level_1.add_child(RuntimeObject::Container(Rc::new(child_level_2)));
-        root_container.add_child(RuntimeObject::Container(Rc::new((child_level_1))));
+        root_container.add_child(RuntimeObject::Container(Rc::new(child_level_1)));
 
         let graph = RuntimeGraph::new(17, Rc::new(root_container));
 

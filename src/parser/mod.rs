@@ -6,7 +6,7 @@
 //!
 //! Another rust example pattern can be found
 //! [here]((https://rust-unofficial.github.io/patterns/patterns/behavioural/visitor.html))
-//! for a better understanding.
+//! for a better understanding of this kind of pattern.
 
 use std::{error::Error, fmt, io::Read, rc::Rc};
 
@@ -33,6 +33,7 @@ use crate::{
 #[cfg(test)]
 mod tests;
 
+/// A visitor which deserializes a RuntimeGraph
 struct RuntimeGraphVisitor {}
 
 impl RuntimeGraphVisitor {
@@ -45,7 +46,10 @@ impl<'de> Visitor<'de> for RuntimeGraphVisitor {
     // Our Visitor is going to produce a RuntimeGraph.
     type Value = RuntimeGraph;
 
-    // Format a message stating what data this Visitor expects to receive.
+    /// Format a message stating what data this Visitor expects to receive.
+    ///
+    /// This is a mandatory function to implement to use the serde visitor
+    /// pattern.
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("Runtime graph")
     }
@@ -96,6 +100,7 @@ impl<'de> Deserialize<'de> for RuntimeGraph {
     }
 }
 
+/// A visitor which deserializes a RuntimeObject
 struct RuntimeObjectVisitor {}
 
 impl RuntimeObjectVisitor {
@@ -106,6 +111,7 @@ impl RuntimeObjectVisitor {
 
 impl<'de> Visitor<'de> for RuntimeObjectVisitor {
     // Our Visitor is going to produce a RuntimeObject.
+    // We define the associated type Value, which is here a RuntimeObject.
     type Value = RuntimeObject;
 
     // Format a message stating what data this Visitor expects to receive.
@@ -182,11 +188,12 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
         Ok(RuntimeObject::Value(Value::Float(v as f32)))
     }
 
+    /// Parse a
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: SerdeError,
     {
-        if v.starts_with("^") {
+        if v.starts_with('^') {
             return Ok(RuntimeObject::Value(Value::String(
                 v.chars().skip(1).collect(),
             )));
@@ -230,6 +237,7 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
 
             // Native functions
             //Some("L^") => {},
+            // TODO
 
             // Void
             "void" => Ok(RuntimeObject::Void),
@@ -237,6 +245,8 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
             _ => Err(SerdeError::custom("Invalid String")),
         }
     }
+
+    // WIP
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
     where
