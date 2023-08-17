@@ -345,9 +345,12 @@ fn external_function_with_conditional_test() {
 }
 
 #[test]
+/// Test the parsing of a Choice RuntimeObject
 fn choice_test() {
     let json = "{\"*\":\".^.c\",\"flg\":18}";
     let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
+    // RuntimeObject is an enum so we need to match on it. Anything but a Choice
+    // object should be wrong in this context.
     match runtime_object {
         RuntimeObject::Choice(choice) => {
             assert_eq!(choice.path_on_choice().unwrap().to_string(), ".^.c");

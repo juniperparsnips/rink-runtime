@@ -188,7 +188,7 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
         Ok(RuntimeObject::Value(Value::Float(v as f32)))
     }
 
-    /// Parse a
+    /// Parse a string
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: SerdeError,
