@@ -11,7 +11,7 @@ use serde::Deserialize;
 /// having to implement all the header of a full story.
 #[derive(Debug, Deserialize)]
 pub struct TestContainer {
-    text: String,
+    object: RuntimeObject,
 }
 
 // WIP: create the structure and allow for empty fields

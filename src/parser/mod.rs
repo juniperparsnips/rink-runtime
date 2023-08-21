@@ -248,6 +248,9 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
 
     // WIP
 
+    /// Deserialize a JSON structure.
+    ///
+    /// The key is expected to be a string
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
     where
         A: MapAccess<'de>,
@@ -501,6 +504,19 @@ impl<'de> Visitor<'de> for RuntimeObjectVisitor {
 
                 // List
                 "list" => return Err(SerdeError::custom("TODO")),
+
+                // This is a test placeholder to be able to user the
+                // deserializer in a test environment WIP
+                "$$$" => {
+                    let value: Option<&str> = map.next_value()?;
+                    match value {
+                        Some(value) => {
+                            todo!("What goes there....?");
+                            return Ok();
+                        }
+                        _ => return Err(SerdeError::custom("Unexpected type")),
+                    }
+                }
 
                 _ => {}
             }
