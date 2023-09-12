@@ -607,7 +607,7 @@ impl<'de> Deserialize<'de> for RuntimeObject {
     {
         // Instantiate our Visitor and ask the Deserializer to drive
         // it over the input data, resulting in an instance of RuntimeObject.
-        deserializer.deserialize_map(RuntimeObjectVisitor::new())
+        deserializer.deserialize_any(RuntimeObjectVisitor::new())
     }
 }
 
@@ -794,12 +794,12 @@ mod tests {
             "readc",
             "rnd",
             "srnd",
-            "visit", 
-            "seq", 
-            "thread", 
-            "done", 
+            "visit",
+            "seq",
+            "thread",
+            "done",
             "end",
-            "listInt", 
+            "listInt",
             "range"
 ]"#;
         let control_commands: Vec<ControlCommand> = vec![
