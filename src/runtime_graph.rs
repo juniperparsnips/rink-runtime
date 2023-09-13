@@ -1,41 +1,30 @@
 use std::rc::Rc;
 
+use serde::Deserialize;
+
 use crate::{
     path::{Fragment, Path},
     runtime::container::Container,
     runtime::RuntimeObject,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct RuntimeGraph {
-    ink_version: u32,
-    root_container: Rc<Container>,
+    #[serde(rename = "inkVersion")]
+    pub ink_version: u32,
+    #[serde(rename = "root")]
+    pub root_container: Rc<Container>,
 }
 
 impl RuntimeGraph {
-    pub fn new(ink_version: u32, container: Rc<Container>) -> RuntimeGraph {
-        RuntimeGraph {
-            ink_version: ink_version,
-            root_container: container,
-        }
-    }
-
-    pub fn ink_version(&self) -> u32 {
-        self.ink_version
-    }
-
-    pub fn root_container(&self) -> &Rc<Container> {
-        &self.root_container
-    }
-
     pub fn resolve_path(&self, path: &Path) -> Option<&RuntimeObject> {
         let mut current_container = &self.root_container;
         let mut runtime_object: Option<&RuntimeObject> = None;
 
-        let mut it = path.iter();
+        let mut it = path.fragments.iter();
         while let Some(fragment) = it.next() {
             match fragment {
-                &Fragment::Index(index) => match current_container.get(index) {
+                &Fragment::Index(index) => match current_container.content.get(index) {
                     Some(child) => {
                         if let &RuntimeObject::Container(ref container) = child {
                             current_container = container;
@@ -73,23 +62,26 @@ mod tests {
         let mut root_container = Container::new();
 
         let mut child_level_1 = Container::new();
-        child_level_1.set_name("a".to_owned());
+        child_level_1.name = Some("a".to_owned());
 
         let mut child_level_2 = Container::new();
-        child_level_2.set_name("b".to_owned());
+        child_level_2.name = Some("b".to_owned());
 
         let mut child_level_3 = Container::new();
-        child_level_3.set_name("c".to_owned());
+        child_level_3.name = Some("c".to_owned());
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3)));
         child_level_1.add_child(RuntimeObject::Container(Rc::new(child_level_2)));
-        root_container.add_child(RuntimeObject::Container(Rc::new((child_level_1))));
+        root_container.add_child(RuntimeObject::Container(Rc::new(child_level_1)));
 
-        let graph = RuntimeGraph::new(17, Rc::new(root_container));
+        let graph = RuntimeGraph {
+            ink_version: 17,
+            root_container: root_container.into(),
+        };
 
         match graph.resolve_path(&path.unwrap()) {
             Some(&RuntimeObject::Container(ref container)) => {
-                assert_eq!(container.name().unwrap(), "c")
+                assert_eq!(container.name.as_ref().unwrap(), "c")
             }
             _ => assert!(false),
         }
@@ -104,27 +96,30 @@ mod tests {
         let mut root_container = Container::new();
 
         let mut child_level_1 = Container::new();
-        child_level_1.set_name("a".to_owned());
+        child_level_1.name = Some("a".to_owned());
 
         let mut child_level_2 = Container::new();
-        child_level_2.set_name("b".to_owned());
+        child_level_2.name = Some("b".to_owned());
 
         let mut child_level_3_1 = Container::new();
-        child_level_3_1.set_name("c".to_owned());
+        child_level_3_1.name = Some("c".to_owned());
 
         let mut child_level_3_2 = Divert::new();
-        child_level_3_2.set_target(TargetType::Name("mytarget".to_owned()));
+        child_level_3_2.target = Some(TargetType::VarName("mytarget".to_owned()));
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3_1)));
         child_level_2.add_child(RuntimeObject::Divert(child_level_3_2));
         child_level_1.add_child(RuntimeObject::Container(Rc::new(child_level_2)));
         root_container.add_child(RuntimeObject::Container(Rc::new(child_level_1)));
 
-        let graph = RuntimeGraph::new(17, Rc::new(root_container));
+        let graph = RuntimeGraph {
+            ink_version: 17,
+            root_container: root_container.into(),
+        };
 
         match graph.resolve_path(&path.unwrap()) {
-            Some(&RuntimeObject::Divert(ref divert)) => match divert.target().unwrap() {
-                &TargetType::Name(ref name) => assert_eq!(name, "mytarget"),
+            Some(&RuntimeObject::Divert(ref divert)) => match divert.target.as_ref().unwrap() {
+                &TargetType::VarName(ref name) => assert_eq!(name, "mytarget"),
                 _ => assert!(false),
             },
             _ => assert!(false),

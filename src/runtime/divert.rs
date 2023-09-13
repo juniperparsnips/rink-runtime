@@ -1,108 +1,145 @@
-use serde::Deserialize;
+use serde::{de::Error, Deserialize, Deserializer};
 
 use crate::path::Path;
 
-#[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Default)]
 pub enum PushPopType {
     Tunnel,
     Function,
+    #[default]
     None,
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub enum TargetType {
-    Name(String),
+    VarName(String),
+    ExternalName(String),
     Path(Path),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, PartialEq, Eq, Clone)]
+#[serde(from = "DivertData")]
 pub struct Divert {
-    target: Option<TargetType>,
-    stack_push_type: PushPopType,
-    pushes_to_stack: bool,
-    external_args: Option<u32>,
-    is_external: bool,
-    is_conditional: bool,
+    pub target: Option<TargetType>,
+    pub stack_push_type: PushPopType,
+    pub pushes_to_stack: bool,
+    pub external_args: Option<u32>,
+    pub is_external: bool,
+    pub is_conditional: bool,
 }
 
 impl Divert {
     pub fn new() -> Divert {
-        Divert {
-            target: None,
-            stack_push_type: PushPopType::None,
-            pushes_to_stack: false,
-            external_args: None,
-            is_external: false,
-            is_conditional: false,
-        }
+        Divert::default()
     }
 
     pub fn new_function() -> Divert {
         Divert {
-            target: None,
             stack_push_type: PushPopType::Function,
             pushes_to_stack: true,
-            external_args: None,
-            is_external: false,
-            is_conditional: false,
+            ..Default::default()
         }
     }
 
     pub fn new_tunnel() -> Divert {
         Divert {
-            target: None,
             stack_push_type: PushPopType::Tunnel,
             pushes_to_stack: true,
-            external_args: None,
-            is_external: false,
-            is_conditional: false,
+            ..Default::default()
         }
     }
 
     pub fn new_external_function() -> Divert {
         Divert {
-            target: None,
             stack_push_type: PushPopType::Function,
-            pushes_to_stack: false,
-            external_args: None,
             is_external: true,
-            is_conditional: false,
+            ..Default::default()
         }
     }
+}
 
-    pub fn stack_push_type(&self) -> &PushPopType {
-        &self.stack_push_type
+#[derive(Debug, Deserialize)]
+struct DivertData {
+    #[serde(flatten)]
+    divert_type: DivertType,
+    #[serde(rename = "c", default)]
+    conditional: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged, deny_unknown_fields)]
+enum DivertType {
+    Standard {
+        #[serde(rename = "->")]
+        path: Path,
+    },
+    Variable {
+        #[serde(rename = "->")]
+        target: String,
+        #[serde(deserialize_with = "true_bool")]
+        var: (),
+    },
+    Function {
+        #[serde(rename = "f()")]
+        path: Path,
+    },
+    Tunnel {
+        #[serde(rename = "->t->")]
+        path: Path,
+    },
+    ExternalFunction {
+        #[serde(rename = "x()")]
+        external_func_name: String,
+        #[serde(rename = "exArgs", default)]
+        external_arguments: u32,
+    },
+}
+
+impl From<DivertData> for Divert {
+    fn from(divert: DivertData) -> Self {
+        match divert.divert_type {
+            DivertType::Standard { path } => Self {
+                target: Some(TargetType::Path(path)),
+                is_conditional: divert.conditional,
+                ..Self::new()
+            },
+            DivertType::Variable { target, var: () } => Self {
+                target: Some(TargetType::VarName(target)),
+                is_conditional: divert.conditional,
+                ..Self::new()
+            },
+            DivertType::Function { path } => Self {
+                target: Some(TargetType::Path(path)),
+                is_conditional: divert.conditional,
+                ..Self::new_function()
+            },
+            DivertType::Tunnel { path } => Self {
+                target: Some(TargetType::Path(path)),
+                is_conditional: divert.conditional,
+                ..Self::new_tunnel()
+            },
+            DivertType::ExternalFunction {
+                external_func_name,
+                external_arguments,
+            } => Self {
+                target: Some(TargetType::ExternalName(external_func_name)),
+                external_args: Some(external_arguments),
+                is_conditional: divert.conditional,
+                ..Self::new_external_function()
+            },
+        }
     }
+}
 
-    pub fn pushes_to_stack(&self) -> bool {
-        self.pushes_to_stack
-    }
-
-    pub fn is_external(&self) -> bool {
-        self.is_external
-    }
-
-    pub fn is_conditional(&self) -> bool {
-        self.is_conditional
-    }
-
-    pub fn target(&self) -> Option<&TargetType> {
-        self.target.as_ref()
-    }
-
-    pub fn external_args(&self) -> Option<u32> {
-        self.external_args
-    }
-
-    pub fn set_target(&mut self, target: TargetType) {
-        self.target = Some(target);
-    }
-
-    pub fn set_is_conditional(&mut self, is_conditional: bool) {
-        self.is_conditional = is_conditional;
-    }
-
-    pub fn set_external_args(&mut self, external_args: u32) {
-        self.external_args = Some(external_args);
+fn true_bool<'de, D>(deserializer: D) -> Result<(), D::Error>
+where
+    D: Deserializer<'de>,
+    D::Error: Error,
+{
+    let b: bool = Deserialize::deserialize(deserializer)?;
+    if b {
+        Ok(())
+    } else {
+        Err(D::Error::custom("Failed, bool literal must be set to true"))
     }
 }

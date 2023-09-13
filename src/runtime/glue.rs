@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::Deserialize;
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
 pub enum Glue {
     #[serde(rename = "<>")]
     Bidirectional,

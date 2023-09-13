@@ -2,20 +2,12 @@ use std::fmt;
 
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct Tag {
-    text: String,
+    #[serde(rename = "#")]
+    pub text: String,
 }
 
-impl Tag {
-    pub fn new(text: String) -> Tag {
-        Tag { text: text }
-    }
-
-    pub fn text(&self) -> &String {
-        &self.text
-    }
-}
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

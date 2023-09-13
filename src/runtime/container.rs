@@ -1,79 +1,43 @@
+use std::{collections::HashMap, fmt};
+
 use serde::Deserialize;
 
 use crate::runtime::RuntimeObject;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize, PartialEq, Clone)]
+#[serde(try_from = "Vec<ContainerElement>")]
 pub struct Container {
-    content: Vec<RuntimeObject>,
-    name: Option<String>,
-    visits_should_be_counted: bool,
-    turn_index_should_be_counted: bool,
-    count_at_start_only: bool,
+    pub content: Vec<RuntimeObject>,
+    pub named_subelements: HashMap<String, RuntimeObject>,
+    pub name: Option<String>,
+    pub visits_should_be_counted: bool,
+    pub turn_index_should_be_counted: bool,
+    pub count_at_start_only: bool,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum ContainerElement {
+    RuntimeObject(RuntimeObject),
+    SpecialFinal(Option<ContainerData>),
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct ContainerData {
+    #[serde(rename = "#n")]
+    name: Option<String>,
+    #[serde(rename = "#f", default)]
+    flags: u8,
+    #[serde(flatten)]
+    named_subelements: HashMap<String, RuntimeObject>,
+}
+
+#[derive(Debug)]
+struct ContainerError(&'static str);
 
 impl Container {
     pub fn new() -> Container {
-        Container {
-            content: Vec::new(),
-            name: None,
-            visits_should_be_counted: false,
-            turn_index_should_be_counted: false,
-            count_at_start_only: false,
-        }
-    }
-
-    pub fn from_runtime_object_vec(content: Vec<RuntimeObject>) -> Container {
-        Container {
-            content: content,
-            name: None,
-            visits_should_be_counted: false,
-            turn_index_should_be_counted: false,
-            count_at_start_only: false,
-        }
-    }
-
-    pub fn get(&self, index: usize) -> Option<&RuntimeObject> {
-        self.content.get(index)
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.content.is_empty()
-    }
-
-    pub fn len(&self) -> usize {
-        self.content.len()
-    }
-
-    pub fn visits_should_be_counted(&self) -> bool {
-        self.visits_should_be_counted
-    }
-
-    pub fn set_visits_should_be_counted(&mut self, flag: bool) {
-        self.visits_should_be_counted = flag;
-    }
-
-    pub fn turn_index_should_be_counted(&self) -> bool {
-        self.turn_index_should_be_counted
-    }
-
-    pub fn set_turn_index_should_be_counted(&mut self, flag: bool) {
-        self.turn_index_should_be_counted = flag;
-    }
-
-    pub fn count_at_start_only(&self) -> bool {
-        self.count_at_start_only
-    }
-
-    pub fn set_count_at_start_only(&mut self, flag: bool) {
-        self.count_at_start_only = flag;
-    }
-
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_ref().map(|x| x.as_ref())
-    }
-
-    pub fn set_name(&mut self, name: String) {
-        self.name = Some(name);
+        Container::default()
     }
 
     pub fn count_flags(&self) -> u8 {
@@ -99,25 +63,13 @@ impl Container {
     }
 
     pub fn set_count_flags(&mut self, count_flags: u8) {
-        if count_flags & 0x1 > 0 {
-            self.visits_should_be_counted = true;
-        }
-
-        if count_flags & 0x2 > 0 {
-            self.turn_index_should_be_counted = true;
-        }
-
-        if count_flags & 0x4 > 0 {
-            self.count_at_start_only = true;
-        }
+        self.visits_should_be_counted = count_flags & 0x1 > 0;
+        self.turn_index_should_be_counted = count_flags & 0x2 > 0;
+        self.count_at_start_only = count_flags & 0x4 > 0;
     }
 
     pub fn add_child(&mut self, obj: RuntimeObject) {
         self.content.push(obj);
-    }
-
-    pub fn append(&mut self, mut objects: Vec<RuntimeObject>) {
-        self.content.append(&mut objects);
     }
 
     pub fn prepend(&mut self, mut objects: Vec<RuntimeObject>) {
@@ -159,5 +111,55 @@ impl Container {
         }
 
         None
+    }
+}
+
+impl TryFrom<Vec<ContainerElement>> for Container {
+    type Error = ContainerError;
+
+    fn try_from(mut elements: Vec<ContainerElement>) -> Result<Container, ContainerError> {
+        use ContainerElement as CE;
+        // take last element of Container
+        let data = match elements.pop() {
+            Some(CE::SpecialFinal(Some(data))) => data,
+            Some(CE::SpecialFinal(None)) => ContainerData::default(),
+            Some(CE::RuntimeObject(_)) => {
+                return Err(ContainerError(
+                    "Failed to deserialize Container, does not end with object or null",
+                ))
+            }
+            None => {
+                return Err(ContainerError(
+                    "Failed to deserialize Container, no elements",
+                ))
+            }
+        };
+        // map other elements to RuntimeObject
+        let content = elements
+            .into_iter()
+            .map(|item| match item {
+                CE::RuntimeObject(element) => Ok(element),
+                CE::SpecialFinal(_) => Err(ContainerError(
+                    "Failed to deserialize Container element as RuntimeObject",
+                )),
+            })
+            .collect::<Result<_, _>>()?;
+        let visits_should_be_counted = data.flags & 0x1 > 0;
+        let turn_index_should_be_counted = data.flags & 0x2 > 0;
+        let count_at_start_only = data.flags & 0x4 > 0;
+        Ok(Container {
+            content,
+            named_subelements: data.named_subelements,
+            name: data.name,
+            visits_should_be_counted,
+            turn_index_should_be_counted,
+            count_at_start_only,
+        })
+    }
+}
+
+impl fmt::Display for ContainerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

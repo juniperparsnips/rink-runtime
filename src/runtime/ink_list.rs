@@ -35,14 +35,14 @@ impl InkListItem {
 
     pub fn origin_name(&self) -> Option<&String> {
         match self.origin_name {
-            Some(ref origin_name) => Some(origin_name),
+            Some(origin_name) => Some(origin_name),
             _ => None,
         }
     }
 
     pub fn item_name(&self) -> Option<&String> {
         match self.item_name {
-            Some(ref item_name) => Some(item_name),
+            Some(item_name) => Some(item_name),
             _ => None,
         }
     }
@@ -53,8 +53,8 @@ impl InkListItem {
 
     pub fn full_name(&self) -> Option<String> {
         match self.item_name {
-            Some(ref item_name) => match self.origin_name {
-                Some(ref origin_name) => Some(format!("{}.{}", origin_name, item_name)),
+            Some(item_name) => match self.origin_name {
+                Some(origin_name) => Some(format!("{}.{}", origin_name, item_name)),
                 _ => Some(format!("?.{}", item_name)),
             },
             _ => None,
@@ -110,14 +110,14 @@ impl InkList {
 
     pub fn add_origin_name(&mut self, origin_name: String) {
         match self.origin_names {
-            Some(ref mut origin_names) => origin_names.push(origin_name),
+            Some(mut origin_names) => origin_names.push(origin_name),
             _ => self.origin_names = Some(vec![origin_name]),
         }
     }
 
     pub fn add_origin_names(&mut self, input: Vec<String>) {
         match self.origin_names {
-            Some(ref mut origin_names) => {
+            Some(mut origin_names) => {
                 let mut others = input;
                 origin_names.append(&mut others)
             }
@@ -222,22 +222,22 @@ impl fmt::Display for InkList {
         let mut item_names_len: usize = 0;
 
         for (item, &value) in self.ink_list_items.iter() {
-            if let Some(ref item_name) = item.item_name {
+            if let Some(item_name) = item.item_name {
                 ordered_list.push((value, item_name));
                 item_names_len += item_name.len();
             }
         }
 
-        ordered_list.sort_by(|&(ref value, _), &(ref other_value, _)| value.cmp(other_value));
+        ordered_list.sort_by(|(value, _), (other_value, _)| value.cmp(other_value));
 
         let mut iter = ordered_list.iter();
         let mut ink_list_str = String::with_capacity(item_names_len + (ordered_list.len() - 1) * 2);
 
-        if let Some(&(_, ref item_name)) = iter.next() {
+        if let Some((_, item_name)) = iter.next() {
             ink_list_str.push_str(item_name)
         }
 
-        for &(_, ref item_name) in iter.next() {
+        for (_, item_name) in iter.next() {
             ink_list_str.push_str(", ");
             ink_list_str.push_str(item_name);
         }

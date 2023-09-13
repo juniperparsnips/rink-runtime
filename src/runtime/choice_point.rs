@@ -4,25 +4,26 @@ use serde::Deserialize;
 
 use crate::path::Path;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, PartialEq, Eq, Clone)]
+#[serde(from = "ChoicePointData")]
 pub struct ChoicePoint {
-    has_condition: bool,
-    has_start_content: bool,
-    has_choice_only_content: bool,
-    is_invisible_default: bool,
-    once_only: bool,
-    path_on_choice: Option<Path>,
+    pub has_condition: bool,
+    pub has_start_content: bool,
+    pub has_choice_only_content: bool,
+    pub is_invisible_default: bool,
+    pub once_only: bool,
+    pub choice_target_path: Option<Path>,
 }
 
 impl ChoicePoint {
-    pub fn new() -> ChoicePoint {
+    pub fn new(choice_target_path: Option<Path>, flags: u8) -> ChoicePoint {
         ChoicePoint {
-            has_condition: false,
-            has_start_content: false,
-            has_choice_only_content: false,
-            is_invisible_default: false,
-            once_only: false,
-            path_on_choice: None,
+            has_condition: flags & 0x1 > 0,
+            has_start_content: flags & 0x2 > 0,
+            has_choice_only_content: flags & 0x4 > 0,
+            is_invisible_default: flags & 0x8 > 0,
+            once_only: flags & 0x10 > 0,
+            choice_target_path,
         }
     }
 
@@ -51,53 +52,30 @@ impl ChoicePoint {
 
         flags
     }
-
-    pub fn set_flags(&mut self, flags: u8) {
-        self.has_condition = flags & 0x1 > 0;
-        self.has_start_content = flags & 0x2 > 0;
-        self.has_choice_only_content = flags & 0x4 > 0;
-        self.is_invisible_default = flags & 0x8 > 0;
-        self.once_only = flags & 0x10 > 0;
-    }
-
-    pub fn has_condition(&self) -> bool {
-        self.has_condition
-    }
-
-    pub fn has_start_content(&self) -> bool {
-        self.has_start_content
-    }
-
-    pub fn has_choice_only_content(&self) -> bool {
-        self.has_choice_only_content
-    }
-
-    pub fn is_invisible_default(&self) -> bool {
-        self.is_invisible_default
-    }
-
-    pub fn once_only(&self) -> bool {
-        self.once_only
-    }
-
-    pub fn path_on_choice(&self) -> Option<&Path> {
-        match self.path_on_choice {
-            Some(ref path) => {
-                // TODO
-                Some(path)
-            }
-            _ => None,
-        }
-    }
-
-    pub fn set_path_on_choice(&mut self, path: Path) {
-        self.path_on_choice = Some(path);
-    }
 }
 
 impl fmt::Display for ChoicePoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO
         write!(f, "")
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct ChoicePointData {
+    #[serde(rename = "*")]
+    choice_target_path: Path,
+    #[serde(rename = "flg")]
+    flags: u8,
+}
+
+impl From<ChoicePointData> for ChoicePoint {
+    fn from(
+        ChoicePointData {
+            choice_target_path,
+            flags,
+        }: ChoicePointData,
+    ) -> Self {
+        ChoicePoint::new(Some(choice_target_path), flags)
     }
 }

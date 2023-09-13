@@ -4,37 +4,12 @@ use serde::Deserialize;
 
 use crate::path::Path;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
+#[serde(from = "VariableAssignmentData")]
 pub struct VariableAssignment {
-    name: String,
-    is_new_declaration: bool,
-    is_global: bool,
-}
-
-impl VariableAssignment {
-    pub fn new(name: String, is_new_declaration: bool, is_global: bool) -> VariableAssignment {
-        VariableAssignment {
-            name: name,
-            is_new_declaration: is_new_declaration,
-            is_global: is_global,
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn is_new_declaration(&self) -> bool {
-        self.is_new_declaration
-    }
-
-    pub fn is_global(&self) -> bool {
-        self.is_global
-    }
-
-    pub fn set_is_global(&mut self, is_global: bool) {
-        self.is_global = is_global
-    }
+    pub name: String,
+    pub is_new_declaration: bool,
+    pub is_global: bool,
 }
 
 impl fmt::Display for VariableAssignment {
@@ -43,19 +18,10 @@ impl fmt::Display for VariableAssignment {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct VariableReference {
-    name: String,
-}
-
-impl VariableReference {
-    pub fn new(name: String) -> VariableReference {
-        VariableReference { name: name }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
+    #[serde(rename = "VAR?")]
+    pub name: String,
 }
 
 impl fmt::Display for VariableReference {
@@ -64,23 +30,53 @@ impl fmt::Display for VariableReference {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct ReadCount {
-    target: Path,
-}
-
-impl ReadCount {
-    pub fn new(target: Path) -> ReadCount {
-        ReadCount { target: target }
-    }
-
-    pub fn target(&self) -> &Path {
-        &self.target
-    }
+    #[serde(rename = "CNT?")]
+    pub target: Path,
 }
 
 impl fmt::Display for ReadCount {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "read_count({})", self.target.to_string())
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct VariableAssignmentData {
+    #[serde(flatten)]
+    assignment_type: VariableAssignmentType,
+    #[serde(rename = "re", default)]
+    old_declaration: bool,
+}
+
+#[derive(Debug, Deserialize)]
+enum VariableAssignmentType {
+    #[serde(rename = "VAR=")]
+    Global(String),
+    #[serde(rename = "temp=")]
+    Temporary(String),
+}
+
+impl From<VariableAssignmentData> for VariableAssignment {
+    fn from(
+        VariableAssignmentData {
+            assignment_type,
+            old_declaration,
+        }: VariableAssignmentData,
+    ) -> Self {
+        let is_new_declaration = !old_declaration;
+        match assignment_type {
+            VariableAssignmentType::Global(name) => VariableAssignment {
+                name,
+                is_new_declaration,
+                is_global: true,
+            },
+            VariableAssignmentType::Temporary(name) => VariableAssignment {
+                name,
+                is_new_declaration,
+                is_global: false,
+            },
+        }
     }
 }
