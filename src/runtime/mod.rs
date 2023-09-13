@@ -96,6 +96,8 @@ where
     if s == "void" {
         Ok(())
     } else {
-        Err(D::Error::custom("Failed to deserialize string literal as void"))
+        Err(D::Error::custom(
+            "Failed to deserialize string literal as void",
+        ))
     }
 }

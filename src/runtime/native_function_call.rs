@@ -36,4 +36,4 @@ pub enum NativeFunctionCall {
     Min,
     #[serde(rename = "MAX")]
     Max,
-  }
+}
