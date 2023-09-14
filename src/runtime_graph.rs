@@ -53,6 +53,8 @@ impl RuntimeGraph {
 
 #[cfg(test)]
 mod tests {
+    use crate::runtime::divert::PushPopType;
+
     use super::*;
 
     #[test]
@@ -104,8 +106,7 @@ mod tests {
         let mut child_level_3_1 = Container::new();
         child_level_3_1.name = Some("c".to_owned());
 
-        let mut child_level_3_2 = Divert::new();
-        child_level_3_2.target = Some(TargetType::VarName("mytarget".to_owned()));
+        let child_level_3_2 = Divert::new(TargetType::VarName("mytarget".to_owned()));
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3_1)));
         child_level_2.add_child(RuntimeObject::Divert(child_level_3_2));
@@ -118,7 +119,7 @@ mod tests {
         };
 
         match graph.resolve_path(&path.unwrap()) {
-            Some(&RuntimeObject::Divert(ref divert)) => match divert.target.as_ref().unwrap() {
+            Some(&RuntimeObject::Divert(ref divert)) => match &divert.target {
                 &TargetType::VarName(ref name) => assert_eq!(name, "mytarget"),
                 _ => assert!(false),
             },

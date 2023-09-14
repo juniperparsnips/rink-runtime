@@ -17,43 +17,52 @@ pub enum TargetType {
     Path(Path),
 }
 
-#[derive(Debug, Deserialize, Default, PartialEq, Eq, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 #[serde(from = "DivertData")]
 pub struct Divert {
-    pub target: Option<TargetType>,
+    pub target: TargetType,
     pub stack_push_type: PushPopType,
     pub pushes_to_stack: bool,
     pub external_args: Option<u32>,
-    pub is_external: bool,
     pub is_conditional: bool,
 }
 
 impl Divert {
-    pub fn new() -> Divert {
-        Divert::default()
-    }
-
-    pub fn new_function() -> Divert {
+    pub fn new(target: TargetType) -> Divert {
         Divert {
-            stack_push_type: PushPopType::Function,
-            pushes_to_stack: true,
-            ..Default::default()
+            target,
+            stack_push_type: PushPopType::None,
+            pushes_to_stack: false,
+            external_args: None,
+            is_conditional: false,
         }
     }
 
-    pub fn new_tunnel() -> Divert {
+    pub fn new_divert(target: TargetType) -> Divert {
+        Divert::new(target)
+    }
+
+    pub fn new_function(target: TargetType) -> Divert {
         Divert {
+            pushes_to_stack: true,
+            stack_push_type: PushPopType::Function,
+            ..Divert::new(target)
+        }
+    }
+
+    pub fn new_tunnel(target: TargetType) -> Divert {
+        Divert {
+            pushes_to_stack: true,
             stack_push_type: PushPopType::Tunnel,
-            pushes_to_stack: true,
-            ..Default::default()
+            ..Divert::new(target)
         }
     }
 
-    pub fn new_external_function() -> Divert {
+    pub fn new_external_function(target: TargetType, external_args: u32) -> Divert {
         Divert {
             stack_push_type: PushPopType::Function,
-            is_external: true,
-            ..Default::default()
+            external_args: Some(external_args),
+            ..Divert::new(target)
         }
     }
 }
@@ -97,36 +106,24 @@ enum DivertType {
 
 impl From<DivertData> for Divert {
     fn from(divert: DivertData) -> Self {
-        match divert.divert_type {
-            DivertType::Standard { path } => Self {
-                target: Some(TargetType::Path(path)),
-                is_conditional: divert.conditional,
-                ..Self::new()
-            },
-            DivertType::Variable { target, var: () } => Self {
-                target: Some(TargetType::VarName(target)),
-                is_conditional: divert.conditional,
-                ..Self::new()
-            },
-            DivertType::Function { path } => Self {
-                target: Some(TargetType::Path(path)),
-                is_conditional: divert.conditional,
-                ..Self::new_function()
-            },
-            DivertType::Tunnel { path } => Self {
-                target: Some(TargetType::Path(path)),
-                is_conditional: divert.conditional,
-                ..Self::new_tunnel()
-            },
+        let new_divert = match divert.divert_type {
+            DivertType::Standard { path } => Self::new_divert(TargetType::Path(path)),
+            DivertType::Variable { target, var: () } => {
+                Self::new_divert(TargetType::VarName(target))
+            }
+            DivertType::Function { path } => Self::new_function(TargetType::Path(path)),
+            DivertType::Tunnel { path } => Self::new_tunnel(TargetType::Path(path)),
             DivertType::ExternalFunction {
                 external_func_name,
                 external_arguments,
-            } => Self {
-                target: Some(TargetType::ExternalName(external_func_name)),
-                external_args: Some(external_arguments),
-                is_conditional: divert.conditional,
-                ..Self::new_external_function()
-            },
+            } => Self::new_external_function(
+                TargetType::ExternalName(external_func_name),
+                external_arguments,
+            ),
+        };
+        Self {
+            is_conditional: divert.conditional,
+            ..new_divert
         }
     }
 }
