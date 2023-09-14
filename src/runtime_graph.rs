@@ -53,8 +53,6 @@ impl RuntimeGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::runtime::divert::PushPopType;
-
     use super::*;
 
     #[test]
