@@ -67,7 +67,7 @@ impl fmt::Display for Value {
             Value::Float(value) => write!(f, "{}", value),
             Value::String(value) => write!(f, "{}", value),
             Value::DivertTarget { target_path } => {
-                write!(f, "DivertTarget({})", target_path.to_string())
+                write!(f, "DivertTarget({})", target_path)
             }
             Value::VariablePointer {
                 name,

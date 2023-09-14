@@ -46,7 +46,7 @@ impl fmt::Display for RuntimeObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             RuntimeObject::ControlCommand(control_command) => {
-                write!(f, "{}", control_command.to_string())
+                write!(f, "{}", control_command)
             }
             _ => write!(f, "TODO"),
         }

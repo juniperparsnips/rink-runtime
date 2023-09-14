@@ -38,7 +38,7 @@ pub struct ReadCount {
 
 impl fmt::Display for ReadCount {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "read_count({})", self.target.to_string())
+        write!(f, "read_count({})", self.target)
     }
 }
 
