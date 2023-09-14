@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, error};
 
 use serde::Deserialize;
 
@@ -162,3 +162,5 @@ impl fmt::Display for ContainerError {
         write!(f, "{}", self.0)
     }
 }
+
+impl error::Error for ContainerError {}
