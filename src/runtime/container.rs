@@ -118,12 +118,11 @@ impl TryFrom<Vec<ContainerElement>> for Container {
     type Error = ContainerError;
 
     fn try_from(mut elements: Vec<ContainerElement>) -> Result<Container, ContainerError> {
-        use ContainerElement as CE;
         // take last element of Container
         let data = match elements.pop() {
-            Some(CE::SpecialFinal(Some(data))) => data,
-            Some(CE::SpecialFinal(None)) => ContainerData::default(),
-            Some(CE::RuntimeObject(_)) => {
+            Some(ContainerElement::SpecialFinal(Some(data))) => data,
+            Some(ContainerElement::SpecialFinal(None)) => ContainerData::default(),
+            Some(ContainerElement::RuntimeObject(_)) => {
                 return Err(ContainerError(
                     "Failed to deserialize Container, does not end with object or null",
                 ))
@@ -138,8 +137,8 @@ impl TryFrom<Vec<ContainerElement>> for Container {
         let content = elements
             .into_iter()
             .map(|item| match item {
-                CE::RuntimeObject(element) => Ok(element),
-                CE::SpecialFinal(_) => Err(ContainerError(
+                ContainerElement::RuntimeObject(element) => Ok(element),
+                ContainerElement::SpecialFinal(_) => Err(ContainerError(
                     "Failed to deserialize Container element as RuntimeObject",
                 )),
             })
