@@ -1,12 +1,11 @@
 use std::{
-    fmt,
+    error, fmt,
     hash::{Hash, Hasher},
-    slice::Iter,
 };
 
 use serde::Deserialize;
 
-#[derive(Debug, Clone, PartialEq, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
 pub enum Fragment {
     Index(usize),
     Name(String),
@@ -21,11 +20,15 @@ impl fmt::Display for Fragment {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(try_from = "&str")]
 pub struct Path {
-    fragments: Vec<Fragment>,
-    is_relative: bool,
+    pub fragments: Vec<Fragment>,
+    pub is_relative: bool,
 }
+
+#[derive(Debug)]
+pub struct PathError(&'static str);
 
 impl Path {
     fn from_fragments(fragments: Vec<Fragment>, is_relative: bool) -> Path {
@@ -33,26 +36,6 @@ impl Path {
             fragments: fragments,
             is_relative: is_relative,
         }
-    }
-
-    pub fn is_relative(&self) -> bool {
-        self.is_relative
-    }
-
-    pub fn first(&self) -> Option<&Fragment> {
-        self.fragments.first()
-    }
-
-    pub fn last(&self) -> Option<&Fragment> {
-        self.fragments.last()
-    }
-
-    pub fn iter(&self) -> Iter<Fragment> {
-        self.fragments.iter()
-    }
-
-    pub fn len(&self) -> usize {
-        self.fragments.len()
     }
 
     pub fn from_str(path: &str) -> Option<Path> {
@@ -101,22 +84,24 @@ impl fmt::Display for Path {
     }
 }
 
-impl PartialEq for Path {
-    fn eq(&self, other: &Path) -> bool {
-        if self.is_relative != other.is_relative {
-            return false;
-        }
-
-        if self.fragments.len() != other.fragments.len() {
-            return false;
-        }
-
-        return self.fragments == other.fragments;
-    }
-}
-
 impl Hash for Path {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.to_string().hash(state);
     }
 }
+
+impl TryFrom<&str> for Path {
+    type Error = PathError;
+
+    fn try_from(string: &str) -> Result<Path, PathError> {
+        Self::from_str(string).ok_or(PathError("Failed to deserialize path"))
+    }
+}
+
+impl fmt::Display for PathError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl error::Error for PathError {}

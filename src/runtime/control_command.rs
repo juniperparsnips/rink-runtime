@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::Deserialize;
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
 pub enum ControlCommand {
     /// Begin logical evaluation mode. In evaluation mode, objects that are encounted are
     /// added to an evaluation stack, rather than simply echoed into the main text output stream.
