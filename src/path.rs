@@ -9,6 +9,7 @@ use serde::Deserialize;
 pub enum Fragment {
     Index(usize),
     Name(String),
+    Parent,
 }
 
 impl fmt::Display for Fragment {
@@ -16,6 +17,7 @@ impl fmt::Display for Fragment {
         match *self {
             Fragment::Index(ref index) => write!(f, "{}", index),
             Fragment::Name(ref name) => write!(f, "{}", name),
+            Fragment::Parent => write!(f, "^"),
         }
     }
 }
@@ -56,9 +58,15 @@ impl Path {
 
         let fragments: Vec<Fragment> = new_path
             .split('.')
-            .map(|ref token| match token.parse::<usize>() {
+            .map(|token| match token.parse::<usize>() {
                 Ok(index) => Fragment::Index(index),
-                Err(_) => Fragment::Name(token.to_string()),
+                Err(_) => {
+                    if token == "^" {
+                        Fragment::Parent
+                    } else {
+                        Fragment::Name(token.to_string())
+                    }
+                }
             })
             .collect();
 

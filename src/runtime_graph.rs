@@ -21,12 +21,11 @@ impl RuntimeGraph {
         let mut current_container = &self.root_container;
         let mut runtime_object: Option<&RuntimeObject> = None;
 
-        let mut it = path.fragments.iter();
-        while let Some(fragment) = it.next() {
+        for fragment in &path.fragments {
             match fragment {
-                &Fragment::Index(index) => match current_container.content.get(index) {
+                Fragment::Index(index) => match current_container.content.get(*index) {
                     Some(child) => {
-                        if let &RuntimeObject::Container(ref container) = child {
+                        if let RuntimeObject::Container(container) = child {
                             current_container = container;
                         }
 
@@ -34,9 +33,9 @@ impl RuntimeGraph {
                     }
                     _ => return None,
                 },
-                &Fragment::Name(ref name) => match current_container.search_by_name(name) {
+                Fragment::Name(name) => match current_container.search_by_name(name) {
                     Some(child) => {
-                        if let &RuntimeObject::Container(ref container) = child {
+                        if let RuntimeObject::Container(container) = child {
                             current_container = container;
                         }
 
@@ -44,6 +43,7 @@ impl RuntimeGraph {
                     }
                     _ => return None,
                 },
+                Fragment::Parent => todo!(),
             }
         }
 
