@@ -7,7 +7,6 @@ use crate::runtime::{
     container::Container,
     control_command::ControlCommand,
     divert::Divert,
-    glue::Glue,
     native_function_call::NativeFunctionCall,
     tag::Tag,
     value::Value,
@@ -18,7 +17,6 @@ pub mod choice_point;
 pub mod container;
 pub mod control_command;
 pub mod divert;
-pub mod glue;
 pub mod native_function_call;
 pub mod tag;
 pub mod value;
@@ -31,13 +29,14 @@ pub enum RuntimeObject {
     Container(Rc<Container>),
     ControlCommand(ControlCommand),
     Divert(Divert),
-    Glue(Glue),
     NativeFunctionCall(NativeFunctionCall),
     Tag(Tag),
     Value(Value),
     VariableAssignment(VariableAssignment),
     VariableReference(VariableReference),
     ReadCount(ReadCount),
+    #[serde(deserialize_with = "glue")]
+    Glue,
     #[serde(deserialize_with = "void")]
     Void,
 }
@@ -98,6 +97,21 @@ where
     } else {
         Err(D::Error::custom(
             "Failed to deserialize string literal as void",
+        ))
+    }
+}
+
+fn glue<'de, D>(deserializer: D) -> Result<(), D::Error>
+where
+    D: Deserializer<'de>,
+    D::Error: Error,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    if s == "<>" {
+        Ok(())
+    } else {
+        Err(D::Error::custom(
+            "Failed to deserialize string literal as glue",
         ))
     }
 }

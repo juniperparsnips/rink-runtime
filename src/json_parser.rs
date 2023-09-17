@@ -48,7 +48,6 @@ mod tests {
             container::Container,
             control_command::ControlCommand,
             divert::{PushPopType, TargetType},
-            glue::Glue,
             native_function_call::NativeFunctionCall,
             value::Value,
             RuntimeObject,
@@ -146,19 +145,13 @@ mod tests {
 
     #[test]
     fn glue_test() {
-        let json = "[\"<>\", \"G<\", \"G>\"]";
-        let glues: Vec<Glue> = vec![Glue::Bidirectional, Glue::Left, Glue::Right];
+        let json = "\"<>\"";
 
-        let runtime_objects: Vec<RuntimeObject> = serde_json::from_str(json).unwrap();
-        assert_eq!(glues.len(), runtime_objects.len());
+        let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
 
-        for (i, runtime_object) in runtime_objects.iter().enumerate() {
-            let glue = glues.get(i).unwrap();
-
-            match runtime_object {
-                &RuntimeObject::Glue(ref value) => assert_eq!(value, glue),
-                _ => assert!(false),
-            }
+        match runtime_object {
+            RuntimeObject::Glue => {}
+            _ => assert!(false),
         }
     }
 
