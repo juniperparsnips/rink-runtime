@@ -28,41 +28,13 @@ pub struct Divert {
 }
 
 impl Divert {
-    pub fn new(target: TargetType) -> Divert {
+    pub fn new(target: TargetType, is_conditional: bool) -> Divert {
         Divert {
             target,
             stack_push_type: PushPopType::None,
             pushes_to_stack: false,
             external_args: None,
-            is_conditional: false,
-        }
-    }
-
-    pub fn new_divert(target: TargetType) -> Divert {
-        Divert::new(target)
-    }
-
-    pub fn new_function(target: TargetType) -> Divert {
-        Divert {
-            pushes_to_stack: true,
-            stack_push_type: PushPopType::Function,
-            ..Divert::new(target)
-        }
-    }
-
-    pub fn new_tunnel(target: TargetType) -> Divert {
-        Divert {
-            pushes_to_stack: true,
-            stack_push_type: PushPopType::Tunnel,
-            ..Divert::new(target)
-        }
-    }
-
-    pub fn new_external_function(target: TargetType, external_args: u32) -> Divert {
-        Divert {
-            stack_push_type: PushPopType::Function,
-            external_args: Some(external_args),
-            ..Divert::new(target)
+            is_conditional,
         }
     }
 }
@@ -106,24 +78,34 @@ enum DivertType {
 
 impl From<DivertData> for Divert {
     fn from(divert: DivertData) -> Self {
-        let new_divert = match divert.divert_type {
-            DivertType::Standard { path } => Self::new_divert(TargetType::Path(path)),
-            DivertType::Variable { target, var: () } => {
-                Self::new_divert(TargetType::VarName(target))
+        match divert.divert_type {
+            DivertType::Standard { path } => {
+                Divert::new(TargetType::Path(path), divert.conditional)
             }
-            DivertType::Function { path } => Self::new_function(TargetType::Path(path)),
-            DivertType::Tunnel { path } => Self::new_tunnel(TargetType::Path(path)),
+            DivertType::Variable { target, var: () } => {
+                Divert::new(TargetType::VarName(target), divert.conditional)
+            }
+            DivertType::Function { path } => Divert {
+                pushes_to_stack: true,
+                stack_push_type: PushPopType::Function,
+                ..Divert::new(TargetType::Path(path), divert.conditional)
+            },
+            DivertType::Tunnel { path } => Divert {
+                pushes_to_stack: true,
+                stack_push_type: PushPopType::Tunnel,
+                ..Divert::new(TargetType::Path(path), divert.conditional)
+            },
             DivertType::ExternalFunction {
                 external_func_name,
                 external_arguments,
-            } => Self::new_external_function(
-                TargetType::ExternalName(external_func_name),
-                external_arguments,
-            ),
-        };
-        Self {
-            is_conditional: divert.conditional,
-            ..new_divert
+            } => Divert {
+                stack_push_type: PushPopType::Function,
+                external_args: Some(external_arguments),
+                ..Divert::new(
+                    TargetType::ExternalName(external_func_name),
+                    divert.conditional,
+                )
+            },
         }
     }
 }

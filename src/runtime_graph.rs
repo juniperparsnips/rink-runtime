@@ -104,7 +104,7 @@ mod tests {
         let mut child_level_3_1 = Container::new();
         child_level_3_1.name = Some("c".to_owned());
 
-        let child_level_3_2 = Divert::new(TargetType::VarName("mytarget".to_owned()));
+        let child_level_3_2 = Divert::new(TargetType::VarName("mytarget".to_owned()), false);
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3_1)));
         child_level_2.add_child(RuntimeObject::Divert(child_level_3_2));
