@@ -47,7 +47,7 @@ mod tests {
         runtime::{
             container::Container,
             control_command::ControlCommand,
-            divert::{PushPopType, TargetType},
+            divert::{Divert, PushPopType, TargetType},
             native_function_call::NativeFunctionCall,
             value::Value,
             RuntimeObject,
@@ -406,7 +406,7 @@ mod tests {
         match runtime_object {
             RuntimeObject::Divert(divert) => {
                 match divert.target {
-                    TargetType::ExternalName(string) => {
+                    TargetType::ExternalName(string, external_args) => {
                         assert_eq!(string, "0.g-0.3.$r1");
                     }
                     _ => assert!(false),
@@ -415,7 +415,6 @@ mod tests {
                 assert_eq!(divert.stack_push_type, PushPopType::Function);
                 assert_eq!(divert.pushes_to_stack, false);
                 assert_eq!(divert.is_conditional, false);
-                assert_eq!(divert.external_args.is_some(), true);
             }
             _ => assert!(false),
         }
@@ -426,8 +425,11 @@ mod tests {
         let json = "{\"x()\": \"0.g-0.3.$r1\", \"exArgs\": 5}";
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
-            RuntimeObject::Divert(divert) => {
-                assert_eq!(divert.external_args, Some(5));
+            RuntimeObject::Divert(Divert {
+                target: TargetType::ExternalName(_, external_args),
+                ..
+            }) => {
+                assert_eq!(external_args, 5);
             }
             _ => assert!(false),
         }
