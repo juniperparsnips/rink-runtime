@@ -13,7 +13,7 @@ pub enum PushPopType {
 #[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub enum TargetType {
     VarName(String),
-    ExternalName(String),
+    ExternalName(String, u32), // u32 is for number of external arguments
     Path(Path),
 }
 
@@ -23,7 +23,6 @@ pub struct Divert {
     pub target: TargetType,
     pub stack_push_type: PushPopType,
     pub pushes_to_stack: bool,
-    pub external_args: Option<u32>,
     pub is_conditional: bool,
 }
 
@@ -33,7 +32,6 @@ impl Divert {
             target,
             stack_push_type: PushPopType::None,
             pushes_to_stack: false,
-            external_args: None,
             is_conditional,
         }
     }
@@ -100,9 +98,8 @@ impl From<DivertData> for Divert {
                 external_arguments,
             } => Divert {
                 stack_push_type: PushPopType::Function,
-                external_args: Some(external_arguments),
                 ..Divert::new(
-                    TargetType::ExternalName(external_func_name),
+                    TargetType::ExternalName(external_func_name, external_arguments),
                     divert.conditional,
                 )
             },
