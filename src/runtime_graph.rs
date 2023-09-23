@@ -21,12 +21,11 @@ impl RuntimeGraph {
         let mut current_container = &self.root_container;
         let mut runtime_object: Option<&RuntimeObject> = None;
 
-        let mut it = path.fragments.iter();
-        while let Some(fragment) = it.next() {
+        for fragment in &path.fragments {
             match fragment {
-                &Fragment::Index(index) => match current_container.content.get(index) {
+                Fragment::Index(index) => match current_container.content.get(*index) {
                     Some(child) => {
-                        if let &RuntimeObject::Container(ref container) = child {
+                        if let RuntimeObject::Container(container) = child {
                             current_container = container;
                         }
 
@@ -34,9 +33,9 @@ impl RuntimeGraph {
                     }
                     _ => return None,
                 },
-                &Fragment::Name(ref name) => match current_container.search_by_name(name) {
+                Fragment::Name(name) => match current_container.search_by_name(name) {
                     Some(child) => {
-                        if let &RuntimeObject::Container(ref container) = child {
+                        if let RuntimeObject::Container(container) = child {
                             current_container = container;
                         }
 
@@ -44,6 +43,7 @@ impl RuntimeGraph {
                     }
                     _ => return None,
                 },
+                Fragment::Parent => todo!(),
             }
         }
 
@@ -104,8 +104,7 @@ mod tests {
         let mut child_level_3_1 = Container::new();
         child_level_3_1.name = Some("c".to_owned());
 
-        let mut child_level_3_2 = Divert::new();
-        child_level_3_2.target = Some(TargetType::VarName("mytarget".to_owned()));
+        let child_level_3_2 = Divert::new(TargetType::VarName("mytarget".to_owned()), false);
 
         child_level_2.add_child(RuntimeObject::Container(Rc::new(child_level_3_1)));
         child_level_2.add_child(RuntimeObject::Divert(child_level_3_2));
@@ -118,7 +117,7 @@ mod tests {
         };
 
         match graph.resolve_path(&path.unwrap()) {
-            Some(&RuntimeObject::Divert(ref divert)) => match divert.target.as_ref().unwrap() {
+            Some(&RuntimeObject::Divert(ref divert)) => match &divert.target {
                 &TargetType::VarName(ref name) => assert_eq!(name, "mytarget"),
                 _ => assert!(false),
             },

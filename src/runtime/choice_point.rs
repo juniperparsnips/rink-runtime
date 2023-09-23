@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::path::Path;
 
-#[derive(Debug, Deserialize, Default, PartialEq, Eq, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 #[serde(from = "ChoicePointData")]
 pub struct ChoicePoint {
     pub has_condition: bool,
@@ -12,11 +12,11 @@ pub struct ChoicePoint {
     pub has_choice_only_content: bool,
     pub is_invisible_default: bool,
     pub once_only: bool,
-    pub choice_target_path: Option<Path>,
+    pub choice_target_path: Path,
 }
 
 impl ChoicePoint {
-    pub fn new(choice_target_path: Option<Path>, flags: u8) -> ChoicePoint {
+    pub fn new(choice_target_path: Path, flags: u8) -> ChoicePoint {
         ChoicePoint {
             has_condition: flags & 0x1 > 0,
             has_start_content: flags & 0x2 > 0,
@@ -76,6 +76,6 @@ impl From<ChoicePointData> for ChoicePoint {
             flags,
         }: ChoicePointData,
     ) -> Self {
-        ChoicePoint::new(Some(choice_target_path), flags)
+        ChoicePoint::new(choice_target_path, flags)
     }
 }

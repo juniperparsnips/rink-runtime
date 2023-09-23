@@ -47,8 +47,7 @@ mod tests {
         runtime::{
             container::Container,
             control_command::ControlCommand,
-            divert::{PushPopType, TargetType},
-            glue::Glue,
+            divert::{Divert, PushPopType, TargetType},
             native_function_call::NativeFunctionCall,
             value::Value,
             RuntimeObject,
@@ -146,19 +145,13 @@ mod tests {
 
     #[test]
     fn glue_test() {
-        let json = "[\"<>\", \"G<\", \"G>\"]";
-        let glues: Vec<Glue> = vec![Glue::Bidirectional, Glue::Left, Glue::Right];
+        let json = "\"<>\"";
 
-        let runtime_objects: Vec<RuntimeObject> = serde_json::from_str(json).unwrap();
-        assert_eq!(glues.len(), runtime_objects.len());
+        let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
 
-        for (i, runtime_object) in runtime_objects.iter().enumerate() {
-            let glue = glues.get(i).unwrap();
-
-            match runtime_object {
-                &RuntimeObject::Glue(ref value) => assert_eq!(value, glue),
-                _ => assert!(false),
-            }
+        match runtime_object {
+            RuntimeObject::Glue => {}
+            _ => assert!(false),
         }
     }
 
@@ -292,7 +285,7 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Divert(divert) => {
-                match divert.target.unwrap() {
+                match divert.target {
                     TargetType::Path(path) => {
                         assert_eq!(path.to_string(), ".^.s");
                     }
@@ -325,7 +318,7 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Divert(divert) => {
-                match divert.target.unwrap() {
+                match divert.target {
                     TargetType::VarName(target_name) => {
                         assert_eq!(target_name, "$r");
                     }
@@ -346,7 +339,7 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Divert(divert) => {
-                match divert.target.unwrap() {
+                match divert.target {
                     TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), "0.g-0.2.c.12.0.c.11.g-0.2.c.$r2");
                     }
@@ -379,7 +372,7 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Divert(divert) => {
-                match divert.target.unwrap() {
+                match divert.target {
                     TargetType::Path(ref path) => {
                         assert_eq!(path.to_string(), "0.g-0.2.c.12.0.c.11.g-0.2.$r1");
                     }
@@ -412,8 +405,8 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Divert(divert) => {
-                match divert.target.unwrap() {
-                    TargetType::ExternalName(string) => {
+                match divert.target {
+                    TargetType::ExternalName(string, external_args) => {
                         assert_eq!(string, "0.g-0.3.$r1");
                     }
                     _ => assert!(false),
@@ -422,7 +415,6 @@ mod tests {
                 assert_eq!(divert.stack_push_type, PushPopType::Function);
                 assert_eq!(divert.pushes_to_stack, false);
                 assert_eq!(divert.is_conditional, false);
-                assert_eq!(divert.is_external, true);
             }
             _ => assert!(false),
         }
@@ -433,8 +425,11 @@ mod tests {
         let json = "{\"x()\": \"0.g-0.3.$r1\", \"exArgs\": 5}";
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
-            RuntimeObject::Divert(divert) => {
-                assert_eq!(divert.external_args.unwrap(), 5);
+            RuntimeObject::Divert(Divert {
+                target: TargetType::ExternalName(_, external_args),
+                ..
+            }) => {
+                assert_eq!(external_args, 5);
             }
             _ => assert!(false),
         }
@@ -458,7 +453,7 @@ mod tests {
         let runtime_object: RuntimeObject = serde_json::from_str(json).unwrap();
         match runtime_object {
             RuntimeObject::Choice(choice) => {
-                assert_eq!(choice.choice_target_path.unwrap().to_string(), ".^.c");
+                assert_eq!(choice.choice_target_path.to_string(), ".^.c");
                 assert_eq!(choice.has_condition, false);
                 assert_eq!(choice.has_start_content, true);
                 assert_eq!(choice.has_choice_only_content, false);
@@ -566,7 +561,7 @@ mod tests {
 
                 match container.get(1).unwrap() {
                     &RuntimeObject::Divert(ref divert) => {
-                        match divert.target.as_ref().unwrap() {
+                        match divert.target {
                             TargetType::VarName(ref target_name) => {
                                 assert_eq!(target_name, "$r");
                             }
