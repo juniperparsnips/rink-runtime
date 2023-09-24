@@ -4,10 +4,10 @@
 From the ink project
 
 ```
-Glue:           "<>", "G<", "G>"
+Glue:           "<>"
 
 ControlCommand: "ev", "out", "/ev", "du" "pop", "->->", "~ret", "str", "/str", "nop", 
-                "choiceCnt", "turns", "visit", "seq", "thread", "done", "end"
+                "choiceCnt", "turns", "visit", "seq", "thread", "done", "end", "readc", "rnd", "listInt", "srnd", "range"
 
 NativeFunction: "+", "-", "/", "*", "%" "~", "==", ">", "<", ">=", "<=", "!=", "!"... etc
 
@@ -18,7 +18,7 @@ Value:          "^string value", "^^string value beginning with ^"
                 {"^->": "path.target"}
                 {"^var": "varname", "ci": 0}
 
-Container:      [...]
+Container:      [..., null]
                 [..., 
                     {
                         "subContainerName": ..., 
