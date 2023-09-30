@@ -2,6 +2,7 @@ use std::fmt;
 
 use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
 
+#[cfg(test)]
 mod tests;
 
 // TODO
