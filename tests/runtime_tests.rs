@@ -14,4 +14,7 @@ fn run_hello_world(hello_world_compiled: String) {
         hello_world_compiled
     });
     todo!("TODO: Implement the parsing & runtime to make this test pass");
+    // This is an integration test, therefore, in the end, it should only call
+    // the Story struct, which is one of the only one to be exposed by the
+    // library.
 }

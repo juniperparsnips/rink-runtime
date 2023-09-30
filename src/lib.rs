@@ -2,7 +2,7 @@
 // mod macros;
 
 mod error;
-mod json_parser;
+mod parser;
 mod path;
 mod runtime;
 mod runtime_graph;
