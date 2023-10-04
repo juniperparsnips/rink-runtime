@@ -15,21 +15,19 @@ use super::{
 };
 
 #[derive(Debug)]
-pub struct Story<Graph, Output> {
-    graph: Graph,
+pub struct Story<Output> {
     output_text: Output,
     glue: bool,
     cursors: Vec<(Rc<Container>, usize)>,
 }
 
-impl<Graph, Output> Story<Graph, Output> {
-    fn new(graph: Graph, output_text: Output) -> Self
+impl<Output> Story<Output> {
+    fn new<Graph>(graph: Graph, output_text: Output) -> Self
     where
         Graph: Borrow<RuntimeGraph>,
     {
         let cursors = vec![(graph.borrow().root_container.clone(), 0)];
         Self {
-            graph,
             output_text,
             glue: false,
             cursors,
@@ -41,20 +39,23 @@ impl<Graph, Output> Story<Graph, Output> {
         Output: Write,
     {
         let object = self.peek_cursor().ok_or(())?;
-        self.execute(object.clone())
+        if self.execute(object.clone()) {
+            self.advance_cursor()?;
+        }
+        Ok(())
     }
 
-    fn execute(&mut self, object: RuntimeObject) -> Result<(), ()>
+    fn execute(&mut self, object: RuntimeObject) -> bool
     where
         Output: Write,
     {
-        let mut advance = true;
         match object {
             RuntimeObject::Choice(_choice) => todo!(),
             RuntimeObject::Container(container) => {
                 // push first index of container to cursor stack
                 self.cursors.push((container.clone(), 0));
-                advance = false;
+                // shouldn't advance cursor
+                return false;
             }
             RuntimeObject::ControlCommand(command) => self.command(command),
             RuntimeObject::Divert(_divert) => todo!(),
@@ -76,11 +77,8 @@ impl<Graph, Output> Story<Graph, Output> {
             RuntimeObject::ReadCount(ReadCount { target: _ }) => todo!(),
             RuntimeObject::Void => {}
         }
-        if advance {
-            self.advance_cursor()
-        } else {
-            Ok(())
-        }
+        // should advance cursor
+        true
     }
 
     fn output<Object>(&mut self, object: Object)
@@ -123,9 +121,9 @@ impl<Graph, Output> Story<Graph, Output> {
     }
 }
 
-impl<Output> Story<RuntimeGraph, Output> {
+impl<Output> Story<Output> {
     pub fn new_from_json(ink: &str, output: Output) -> Option<Self> {
-        let graph = serde_json::from_str(ink).unwrap();
+        let graph: RuntimeGraph = serde_json::from_str(ink).unwrap();
         Some(Self::new(graph, output))
     }
 }
@@ -151,7 +149,7 @@ mod tests {
         let value = serde_json::from_str(r##""^string""##).unwrap();
         let mut output = String::new();
         let mut story = Story::new(&graph, &mut output);
-        story.execute(value).unwrap();
+        assert!(story.execute(value));
         assert_eq!(output, "string");
     }
 
