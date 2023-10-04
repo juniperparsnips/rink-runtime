@@ -4,14 +4,15 @@ use std::{
     rc::Rc,
 };
 
-use crate::runtime_graph::RuntimeGraph;
-
-use super::{
-    container::Container,
-    control_command::ControlCommand,
-    value::Value,
-    variable::{ReadCount, VariableReference},
-    RuntimeObject,
+use crate::{
+    runtime::{
+        container::Container,
+        control_command::ControlCommand,
+        value::Value,
+        variable::{ReadCount, VariableReference},
+        RuntimeObject,
+    },
+    runtime_graph::RuntimeGraph,
 };
 
 #[derive(Debug)]
