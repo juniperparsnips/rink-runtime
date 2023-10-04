@@ -107,8 +107,7 @@ where
 
     fn peek_cursor(&self) -> Option<&RuntimeObject> {
         let (container, index) = self.cursors.last()?;
-        let object = container.content.get(*index)?;
-        Some(object)
+        container.content.get(*index)
     }
 
     fn advance_cursor(&mut self) -> Result<(), ()> {
