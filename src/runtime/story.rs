@@ -43,8 +43,7 @@ where
         Some(Self::new(graph, output))
     }
 
-    pub fn step(&mut self) -> Result<(), ()>
-    {
+    pub fn step(&mut self) -> Result<(), ()> {
         let object = self.peek_cursor().ok_or(())?;
         if self.execute(object.clone()) {
             self.advance_cursor()?;
@@ -52,8 +51,7 @@ where
         Ok(())
     }
 
-    fn execute(&mut self, object: RuntimeObject) -> bool
-    {
+    fn execute(&mut self, object: RuntimeObject) -> bool {
         match object {
             RuntimeObject::Choice(_choice) => todo!(),
             RuntimeObject::Container(container) => {
