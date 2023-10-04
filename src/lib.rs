@@ -13,3 +13,5 @@ mod runtime_graph;
 // mod runtime_context;
 // mod story;
 // mod story_state;
+
+pub use runtime::story::Story;

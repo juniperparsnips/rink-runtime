@@ -1,4 +1,5 @@
 use std::{
+    borrow::Borrow,
     fmt::{self, Write},
     rc::Rc,
 };
@@ -7,22 +8,26 @@ use crate::runtime_graph::RuntimeGraph;
 
 use super::{
     container::Container,
+    control_command::ControlCommand,
     value::Value,
     variable::{ReadCount, VariableReference},
     RuntimeObject,
 };
 
 #[derive(Debug)]
-pub struct Story<'graph, Output> {
-    graph: &'graph RuntimeGraph,
+pub struct Story<Graph, Output> {
+    graph: Graph,
     output_text: Output,
     glue: bool,
     cursors: Vec<(Rc<Container>, usize)>,
 }
 
-impl<'graph, Output> Story<'graph, Output> {
-    fn new(graph: &'graph RuntimeGraph, output_text: Output) -> Self {
-        let cursors = vec![(graph.root_container.clone(), 0)];
+impl<Graph, Output> Story<Graph, Output> {
+    fn new(graph: Graph, output_text: Output) -> Self
+    where
+        Graph: Borrow<RuntimeGraph>,
+    {
+        let cursors = vec![(graph.borrow().root_container.clone(), 0)];
         Self {
             graph,
             output_text,
@@ -31,27 +36,27 @@ impl<'graph, Output> Story<'graph, Output> {
         }
     }
 
-    fn step(&mut self) -> Result<(), ()>
+    pub fn step(&mut self) -> Result<(), ()>
     where
         Output: Write,
     {
         let object = self.peek_cursor().ok_or(())?;
-        self.execute(object.clone());
-        self.advance_cursor()?;
-        Ok(())
+        self.execute(object.clone())
     }
 
-    fn execute(&mut self, object: RuntimeObject)
+    fn execute(&mut self, object: RuntimeObject) -> Result<(), ()>
     where
         Output: Write,
     {
+        let mut advance = true;
         match object {
             RuntimeObject::Choice(_choice) => todo!(),
             RuntimeObject::Container(container) => {
                 // push first index of container to cursor stack
-                self.cursors.push((container.clone(), 0))
+                self.cursors.push((container.clone(), 0));
+                advance = false;
             }
-            RuntimeObject::ControlCommand(_command) => todo!(),
+            RuntimeObject::ControlCommand(command) => self.command(command),
             RuntimeObject::Divert(_divert) => todo!(),
             RuntimeObject::Glue => self.glue = true,
             RuntimeObject::NativeFunctionCall(_call) => todo!(),
@@ -71,6 +76,11 @@ impl<'graph, Output> Story<'graph, Output> {
             RuntimeObject::ReadCount(ReadCount { target: _ }) => todo!(),
             RuntimeObject::Void => {}
         }
+        if advance {
+            self.advance_cursor()
+        } else {
+            Ok(())
+        }
     }
 
     fn output<Object>(&mut self, object: Object)
@@ -84,6 +94,15 @@ impl<'graph, Output> Story<'graph, Output> {
         self.output_text
             .write_str(&format!("{}", object))
             .expect("Error writing Ink output to output stream");
+    }
+
+    fn command(&mut self, command: ControlCommand) {
+        match command {
+            ControlCommand::Done => {
+                // TODO close current thread
+            }
+            _ => todo!(),
+        }
     }
 
     fn peek_cursor(&self) -> Option<&RuntimeObject> {
@@ -101,6 +120,13 @@ impl<'graph, Output> Story<'graph, Output> {
         // place index back on cursor stack, incremented
         self.cursors.push((container, index + 1));
         Ok(())
+    }
+}
+
+impl<Output> Story<RuntimeGraph, Output> {
+    pub fn new_from_json(ink: &str, output: Output) -> Option<Self> {
+        let graph = serde_json::from_str(ink).unwrap();
+        Some(Self::new(graph, output))
     }
 }
 
@@ -122,9 +148,10 @@ mod tests {
     #[test]
     fn execute_string() {
         let graph = serde_json::from_str(r##"{"root": [null], "inkVersion": 21}"##).unwrap();
+        let value = serde_json::from_str(r##""^string""##).unwrap();
         let mut output = String::new();
         let mut story = Story::new(&graph, &mut output);
-        story.execute(serde_json::from_str(r##""^string""##).unwrap());
+        story.execute(value).unwrap();
         assert_eq!(output, "string");
     }
 
@@ -153,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn stepping() {
+    fn step_through() {
         let graph =
             serde_json::from_str(r##"{"root": ["^1", "^2", "^3", null], "inkVersion": 21}"##)
                 .unwrap();
