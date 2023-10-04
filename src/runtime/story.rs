@@ -124,9 +124,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::runtime::{value::Value, RuntimeObject};
-
-    use super::Story;
+    use crate::runtime::{value::Value, RuntimeObject, story::Story};
 
     #[test]
     fn output_string() {
