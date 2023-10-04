@@ -181,4 +181,19 @@ mod tests {
         assert!(story.step().is_err());
         assert_eq!(output, "123");
     }
+
+    #[test]
+    fn step_through_nested() {
+        let graph =
+            serde_json::from_str(r##"{"root": ["^1", ["^2", "^3", null], "^4", null], "inkVersion": 21}"##)
+                .unwrap();
+        let mut output = String::new();
+        let mut story = Story::new(&graph, &mut output);
+        story.step().unwrap();
+        story.step().unwrap();
+        story.step().unwrap();
+        story.step().unwrap();
+        assert!(story.step().is_err());
+        assert_eq!(output, "1234");
+    }
 }
