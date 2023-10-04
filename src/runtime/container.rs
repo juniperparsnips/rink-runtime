@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt, error};
+use std::{collections::HashMap, error, fmt};
 
 use serde::Deserialize;
 
