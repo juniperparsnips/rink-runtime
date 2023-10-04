@@ -22,7 +22,10 @@ pub struct Story<Output> {
     cursors: Vec<(Rc<Container>, usize)>,
 }
 
-impl<Output> Story<Output> {
+impl<Output> Story<Output>
+where
+    Output: Write,
+{
     fn new<Graph>(graph: Graph, output_text: Output) -> Self
     where
         Graph: Borrow<RuntimeGraph>,
@@ -35,9 +38,12 @@ impl<Output> Story<Output> {
         }
     }
 
+    pub fn new_from_json(ink: &str, output: Output) -> Option<Self> {
+        let graph: RuntimeGraph = serde_json::from_str(ink).unwrap();
+        Some(Self::new(graph, output))
+    }
+
     pub fn step(&mut self) -> Result<(), ()>
-    where
-        Output: Write,
     {
         let object = self.peek_cursor().ok_or(())?;
         if self.execute(object.clone()) {
@@ -47,8 +53,6 @@ impl<Output> Story<Output> {
     }
 
     fn execute(&mut self, object: RuntimeObject) -> bool
-    where
-        Output: Write,
     {
         match object {
             RuntimeObject::Choice(_choice) => todo!(),
@@ -85,7 +89,6 @@ impl<Output> Story<Output> {
     fn output<Object>(&mut self, object: Object)
     where
         Object: fmt::Display,
-        Output: Write,
     {
         if self.glue {
             todo!()
@@ -119,13 +122,6 @@ impl<Output> Story<Output> {
         // place index back on cursor stack, incremented
         self.cursors.push((container, index + 1));
         Ok(())
-    }
-}
-
-impl<Output> Story<Output> {
-    pub fn new_from_json(ink: &str, output: Output) -> Option<Self> {
-        let graph: RuntimeGraph = serde_json::from_str(ink).unwrap();
-        Some(Self::new(graph, output))
     }
 }
 
